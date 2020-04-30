@@ -37,6 +37,6 @@ private:
   RenderData GeometryData;
 
   GLFWwindow* Window;
-  Mesh mesh;
+  Mesh* mesh;
   ShaderManager ShManager;
 };

@@ -11,10 +11,10 @@ Mesh::Mesh()
   int VertexCount = 4;
   // Position Data
   VertexPosition.resize(VertexCount);
-  VertexPosition[0] = glm::vec3(1.0f, 1.0f, -1.0f); // Top Right
-  VertexPosition[1] = glm::vec3(1.0f, -1.0f, -1.0f); // Bottom Right
-  VertexPosition[2] = glm::vec3(-1.0f, -1.0f, -1.0f); // Bottom Left
-  VertexPosition[3] = glm::vec3(-1.0f, 1.0f, -1.0f); // Top Left
+  VertexPosition[0] = glm::vec3( 0.5f,  0.5f, 0.0f); // Top Right
+  VertexPosition[1] = glm::vec3( 0.5f, -0.5f, 0.0f); // Bottom Right
+  VertexPosition[2] = glm::vec3(-0.5f, -0.5f, 0.0f); // Bottom Left
+  VertexPosition[3] = glm::vec3(-0.5f,  0.5f, 0.0f); // Top Left
 
   // Color Data
   VertexColor.resize(VertexCount);
@@ -34,12 +34,12 @@ Mesh::Mesh()
   Indices.resize(6);
   // Triangle 1
   Indices[0] = 0;
-  Indices[1] = 1;
-  Indices[2] = 3;
+  Indices[1] = 3;
+  Indices[2] = 2;
   // Triangle 2
-  Indices[3] = 1;
-  Indices[4] = 2;
-  Indices[5] = 3;
+  Indices[3] = 2;
+  Indices[4] = 1;
+  Indices[5] = 0;
 }
 
 Mesh::~Mesh(){}

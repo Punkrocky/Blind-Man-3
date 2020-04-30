@@ -10,16 +10,6 @@
 #include "GraphicsSystem.h"
 #include "GameWindow.h"
 
-float vertices[] = {
-        0.5f,  0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-       -0.5f, -0.5f, 0.0f,  // bottom left
-       -0.5f,  0.5f, 0.0f   // top left 
-};
-unsigned int indices[] = {  // note that we start from 0!
-    0, 3, 2,  // first Triangle
-    2, 1, 0   // second Triangle
-};
 
 void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                               const GLchar* message, const void* userParam)
@@ -76,6 +66,7 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 
 GraphicsSystem::GraphicsSystem()
 {
+  mesh = new Mesh;
 }
 
 GraphicsSystem::~GraphicsSystem()
@@ -117,14 +108,14 @@ void GraphicsSystem::Init()
   // Build a buffer for the position data for the VAO
   glGenBuffers(1, &GeometryData.PositionVBO);
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, mesh->VertexPosition.size() * sizeof(glm::vec3), &mesh->VertexPosition[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 
   // Build a buffer for the Color data for the VAO
   glGenBuffers(1, &GeometryData.ColorVBO);
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(mesh.VertexColor), &mesh.VertexColor[0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, mesh->VertexColor.size() * sizeof(glm::vec4), &mesh->VertexColor[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)0);
 
@@ -132,7 +123,7 @@ void GraphicsSystem::Init()
 
   glGenBuffers(1, &GeometryData.EBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->Indices.size() * sizeof(unsigned int), &mesh->Indices[0], GL_STATIC_DRAW);
 
   glBindVertexArray(0);
 
