@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\Engine.cpp" />
     <ClCompile Include="Source\GameWindow.cpp" />
     <ClCompile Include="Source\GraphicsComponent.cpp" />
@@ -146,6 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\BaseSystem.h" />
+    <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Engine.h" />
     <ClInclude Include="Headers\GraphicsComponent.h" />
     <ClInclude Include="Headers\GraphicsSystem.h" />

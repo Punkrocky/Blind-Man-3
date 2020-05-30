@@ -20,7 +20,7 @@ int main(void)
   // Check that we successfully created a window.
   if (PtrWindow)
   {
-    Engine GameEngine(*PtrWindow);
+    Engine GameEngine(PtrWindow);
     GameEngine.Init();
   
     GameEngine.Update();

@@ -67,16 +67,49 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 GraphicsSystem::GraphicsSystem()
 {
   mesh = new Mesh;
+  this->Init();
 }
+
+void DestroySystem(GraphicsSystem* system)
+{
+  delete system;
+}
+
+
+void GraphicsSystem::Update()
+{
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(ShManager.GetShaderID(0));
+
+  glm::mat4 Matrix = Viewport.GetViewMatrix();
+  glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+
+  glBindVertexArray(GeometryData.VAO);
+  //glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
+
+  glfwSwapBuffers(Window);
+  glfwPollEvents();
+}
+
+
+
+/*****************************| PRIVATE MEMBERS |*****************************/
 
 GraphicsSystem::~GraphicsSystem()
 {
-  
+  this->Shutdown();
+  delete mesh;
 }
 
 void GraphicsSystem::Init()
 {
   Window = GameWindow::GetPtrGameWindow();
+
+  glm::ivec3 WindowSize(1);
+  glfwGetWindowSize(Window, &WindowSize.x, &WindowSize.y);
+  Viewport.SetScale(WindowSize);
 
   glewExperimental = true;
   if (glewInit() != GLEW_OK)
@@ -99,7 +132,7 @@ void GraphicsSystem::Init()
   // Shader Manager
   ShManager.Init();
   // Texture Manager
-  // TODO:
+  // TODO: Texture Manager
 
   // VAO for post effects
   glGenVertexArrays(1, &GeometryData.VAO);
@@ -110,14 +143,14 @@ void GraphicsSystem::Init()
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
   glBufferData(GL_ARRAY_BUFFER, mesh->VertexPosition.size() * sizeof(glm::vec3), &mesh->VertexPosition[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
   // Build a buffer for the Color data for the VAO
   glGenBuffers(1, &GeometryData.ColorVBO);
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
   glBufferData(GL_ARRAY_BUFFER, mesh->VertexColor.size() * sizeof(glm::vec4), &mesh->VertexColor[0], GL_STATIC_DRAW);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (void*)0);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -128,20 +161,6 @@ void GraphicsSystem::Init()
   glBindVertexArray(0);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-void GraphicsSystem::Update()
-{
-  glClear(GL_COLOR_BUFFER_BIT);
-
-  glUseProgram(ShManager.GetShaderID(0));
-  glBindVertexArray(GeometryData.VAO);
-  //glDrawArrays(GL_TRIANGLES, 0, 6);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
-
-  glfwSwapBuffers(Window);
-  glfwPollEvents();
 }
 
 void GraphicsSystem::Shutdown()

@@ -11,18 +11,22 @@
 #include "OpenGLIncludes.h"
 #include "GraphicsComponent.h"
 #include "ShaderManager.h"
+#include "Camera.h"
 
 class GraphicsSystem
 {
 public:
   GraphicsSystem();
-  ~GraphicsSystem();
+  friend void DestroySystem(GraphicsSystem* system);
 
-  void Init();
   void Update();
-  void Shutdown();
 
 private:
+  void Init();
+  void Shutdown();
+  ~GraphicsSystem(); // Private destructor will make the class only dynamically allocatable.
+
+
   struct RenderData
   {
     GLuint PositionVBO;
@@ -39,4 +43,5 @@ private:
   GLFWwindow* Window;
   Mesh* mesh;
   ShaderManager ShManager;
+  Camera Viewport;
 };

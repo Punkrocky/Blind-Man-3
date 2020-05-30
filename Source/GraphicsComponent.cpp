@@ -11,17 +11,18 @@ Mesh::Mesh()
   int VertexCount = 4;
   // Position Data
   VertexPosition.resize(VertexCount);
-  VertexPosition[0] = glm::vec3( 0.5f,  0.5f, 0.0f); // Top Right
-  VertexPosition[1] = glm::vec3( 0.5f, -0.5f, 0.0f); // Bottom Right
-  VertexPosition[2] = glm::vec3(-0.5f, -0.5f, 0.0f); // Bottom Left
-  VertexPosition[3] = glm::vec3(-0.5f,  0.5f, 0.0f); // Top Left
+  VertexPosition[0] = glm::vec3( 1.0f,  1.0f, 0.0f); // Top Right
+  VertexPosition[1] = glm::vec3( 1.0f, -1.0f, 0.0f); // Bottom Right
+  VertexPosition[2] = glm::vec3(-1.0f, -1.0f, 0.0f); // Bottom Left
+  VertexPosition[3] = glm::vec3(-1.0f,  1.0f, 0.0f); // Top Left
 
   // Color Data
   VertexColor.resize(VertexCount);
   for (int i = 0; i < VertexCount; ++i)
   {
     VertexColor[i] = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // blue
-    //VertexPosition[i] *= 0.5f;
+    // Temp
+    VertexPosition[i] *= 40.0f;
   }
 
   // Texture Data

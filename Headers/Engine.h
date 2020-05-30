@@ -13,7 +13,7 @@
 class Engine
 {
 public:
-  Engine(GameWindow& window);
+  Engine(GameWindow* window);
   ~Engine();
 
   void Init();
@@ -23,7 +23,7 @@ public:
   bool IsShuttingDown();
 
 private:
-  GameWindow& RefWindow;
-  GraphicsSystem GraphSys;
+  GameWindow* PtrGameWindow;
+  GraphicsSystem* PtrGraphicsSys;
   bool bShuttingDown;
 };

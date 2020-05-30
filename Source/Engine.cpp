@@ -7,9 +7,10 @@
 #include "Engine.h"
 
 
-Engine::Engine(GameWindow& window) : RefWindow(window)
+Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
   bShuttingDown = false;
+  PtrGraphicsSys = new GraphicsSystem;
 }
 
 Engine::~Engine()
@@ -19,20 +20,27 @@ Engine::~Engine()
 
 void Engine::Init()
 {
-  GraphSys.Init();
+  //TODO: Remove?
+  //PtrGraphicsSys->Init();
 }
 
 void Engine::Update()
 {
   while (!bShuttingDown)
   {
-    GraphSys.Update();
+    PtrGraphicsSys->Update();
+
+    if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()))
+    {
+      bShuttingDown = true;
+    }
   }
 }
 
 void Engine::Shutdown()
 {
-  GraphSys.Shutdown();
+  //PtrGraphicsSys->Shutdown();
+  DestroySystem(PtrGraphicsSys);
 }
 
 bool Engine::IsShuttingDown()
