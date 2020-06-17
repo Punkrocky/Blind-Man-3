@@ -42,7 +42,7 @@ glm::mat4 Camera::GetViewMatrix()
   if (bDirty)
   {
     glm::mat4 translate = glm::translate(glm::mat4(1.0f), Position);
-    ViewMatrix = glm::ortho(-Scale.x/2, Scale.x/2, -Scale.y/2, Scale.y/2);
+    ViewMatrix = glm::ortho(-Scale.x, Scale.x, -Scale.y, Scale.y);
 
     ViewMatrix *= translate;
     bDirty = false;

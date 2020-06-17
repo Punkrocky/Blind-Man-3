@@ -15,10 +15,20 @@ public:
   Mesh();
   ~Mesh();
 
-  std::vector<glm::vec3> VertexPosition; // XYZW
-  std::vector<glm::vec4> VertexColor;    // RGBA
-  std::vector<glm::vec2> VertexTexture;  // UV
+  size_t GetVertexCount();
+  size_t GetIndexCount();
+
+  std::vector<glm::vec3>& GetVertexPositions();
+  std::vector<glm::vec4>& GetVertexColors();
+  std::vector<glm::vec2>& GetVertexTextureCoords();
+  std::vector<unsigned int>& GetIndices();
+
+private:
+  std::vector<glm::vec3> VertexPositions; // XYZ
+  std::vector<glm::vec4> VertexColors;    // RGBA
+  std::vector<glm::vec2> VertexTextureCoords;  // UV
   std::vector<unsigned int> Indices;
+  int VertexCount;
 };
 
 class Texture
@@ -46,5 +56,23 @@ private:
 class GraphicsComponent
 {
 public:
+  GraphicsComponent()
+  {
+    mesh = new Mesh;
+  }
+
+  ~GraphicsComponent()
+  {
+    delete mesh;
+  }
+
+  Mesh* GetMesh()
+  {
+    return mesh;
+  }
+
 private:
+  Mesh* mesh;
+  //Texture* texture;
+  //Shader* shader;
 };

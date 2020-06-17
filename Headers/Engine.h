@@ -9,6 +9,8 @@
 #include "GraphicsSystem.h"
 #include "GraphicsSystem.h"
 #include "GameWindow.h"
+#include "Entity.h"
+#include "Timer.h"
 
 class Engine
 {
@@ -17,7 +19,7 @@ public:
   ~Engine();
 
   void Init();
-  void Update();
+  void Update(float dt);
   void Shutdown();
 
   bool IsShuttingDown();
@@ -25,5 +27,8 @@ public:
 private:
   GameWindow* PtrGameWindow;
   GraphicsSystem* PtrGraphicsSys;
+  Entity* entity;
+  Timer GameTimer;
   bool bShuttingDown;
+  float dt;
 };

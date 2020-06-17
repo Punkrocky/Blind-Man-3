@@ -66,7 +66,7 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 
 GraphicsSystem::GraphicsSystem()
 {
-  mesh = new Mesh;
+  //mesh = new Mesh;
   this->Init();
 }
 
@@ -75,22 +75,35 @@ void DestroySystem(GraphicsSystem* system)
   delete system;
 }
 
+static float Tdt;
 
-void GraphicsSystem::Update()
+void GraphicsSystem::Update(float dt, Entity* entity)
 {
+  Tdt += dt;
+  VAOPrepare(entity->GetGraphicsComponent());
+
+  // Remove anything drawn to the last buffer
   glClear(GL_COLOR_BUFFER_BIT);
+  // Tell OpenGL the shader we are using
   glUseProgram(ShManager.GetShaderID(0));
 
+  // Get the View matrix
   glm::mat4 Matrix = Viewport.GetViewMatrix();
+  // Combine the view matrix and the modle matrix together
+  Matrix *= entity->GetTransformComponent()->GetModelMatrix();
+  // Send the matrix combination to the shader
   glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
 
+  // Bind the Vertex array for the current entity
   glBindVertexArray(GeometryData.VAO);
-  //glDrawArrays(GL_TRIANGLES, 0, 6);
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 
+
   glfwSwapBuffers(Window);
   glfwPollEvents();
+
+  entity->GetTransformComponent()->SetPosition(sinf(Tdt) * 1200.0f, cosf(Tdt) * 700.0f);
 }
 
 
@@ -100,7 +113,6 @@ void GraphicsSystem::Update()
 GraphicsSystem::~GraphicsSystem()
 {
   this->Shutdown();
-  delete mesh;
 }
 
 void GraphicsSystem::Init()
@@ -134,39 +146,48 @@ void GraphicsSystem::Init()
   // Texture Manager
   // TODO: Texture Manager
 
-  // VAO for post effects
   glGenVertexArrays(1, &GeometryData.VAO);
-  glBindVertexArray(GeometryData.VAO);
-
-  // Build a buffer for the position data for the VAO
   glGenBuffers(1, &GeometryData.PositionVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, mesh->VertexPosition.size() * sizeof(glm::vec3), &mesh->VertexPosition[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-  // Build a buffer for the Color data for the VAO
   glGenBuffers(1, &GeometryData.ColorVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
-  glBufferData(GL_ARRAY_BUFFER, mesh->VertexColor.size() * sizeof(glm::vec4), &mesh->VertexColor[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
+  glGenBuffers(1, &GeometryData.TextureVBO);
   glGenBuffers(1, &GeometryData.EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->Indices.size() * sizeof(unsigned int), &mesh->Indices[0], GL_STATIC_DRAW);
-
-  glBindVertexArray(0);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void GraphicsSystem::Shutdown()
 {
-  glDeleteVertexArrays(1, &GeometryData.VAO);
   glDeleteBuffers(1, &GeometryData.PositionVBO);
   glDeleteBuffers(1, &GeometryData.ColorVBO);
+  glDeleteBuffers(1, &GeometryData.TextureVBO);
+  glDeleteBuffers(1, &GeometryData.EBO);
+  glDeleteVertexArrays(1, &GeometryData.VAO);
+
   glDeleteProgram(ShManager.GetShaderID(0));
+}
+
+void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
+{
+  Mesh* mesh = comp->GetMesh();
+
+  glBindVertexArray(GeometryData.VAO);
+
+  // Build a buffer for the position data for the VAO
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+  glBufferData(GL_ARRAY_BUFFER, mesh->GetVertexCount() * sizeof(glm::vec3), &mesh->GetVertexPositions()[0], GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+  // Build a buffer for the Color data for the VAO
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
+  glBufferData(GL_ARRAY_BUFFER, mesh->GetVertexCount() * sizeof(glm::vec4), &mesh->GetVertexColors()[0], GL_STATIC_DRAW);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIndexCount() * sizeof(unsigned int), &mesh->GetIndices()[0], GL_STATIC_DRAW);
+
+  glBindVertexArray(0);
 }

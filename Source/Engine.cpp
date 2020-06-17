@@ -6,11 +6,14 @@
  **********************************************************************************************************************/
 #include "Engine.h"
 
+#include <iostream>
 
 Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
   bShuttingDown = false;
   PtrGraphicsSys = new GraphicsSystem;
+  entity = new Entity;
+  //entity->GetTransformComponent()->SetPosition(1000.0f, -500.0f);
 }
 
 Engine::~Engine()
@@ -20,15 +23,21 @@ Engine::~Engine()
 
 void Engine::Init()
 {
-  //TODO: Remove?
-  //PtrGraphicsSys->Init();
 }
 
-void Engine::Update()
+void Engine::Update(float dt)
 {
   while (!bShuttingDown)
   {
-    PtrGraphicsSys->Update();
+    dt = GameTimer.EndFrame();
+    if (dt < 1.0f / 60.0f) // if less than 1 frame has passed don't update anything
+    {
+      continue;
+    }
+    //std::cout << dt << "\n";
+    GameTimer.StartFrame();
+
+    PtrGraphicsSys->Update(dt, entity);
 
     if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()))
     {

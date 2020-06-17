@@ -12,6 +12,7 @@
 #include "GraphicsComponent.h"
 #include "ShaderManager.h"
 #include "Camera.h"
+#include "Entity.h"
 
 class GraphicsSystem
 {
@@ -19,13 +20,14 @@ public:
   GraphicsSystem();
   friend void DestroySystem(GraphicsSystem* system);
 
-  void Update();
+  void Update(float dt, Entity* entity);
 
 private:
   void Init();
   void Shutdown();
   ~GraphicsSystem(); // Private destructor will make the class only dynamically allocatable.
 
+  void VAOPrepare(GraphicsComponent* comp);
 
   struct RenderData
   {
@@ -41,7 +43,6 @@ private:
   RenderData GeometryData;
 
   GLFWwindow* Window;
-  Mesh* mesh;
   ShaderManager ShManager;
   Camera Viewport;
 };

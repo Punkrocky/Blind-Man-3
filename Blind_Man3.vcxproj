@@ -139,21 +139,27 @@
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
     <ClCompile Include="Source\Engine.cpp" />
+    <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\GameWindow.cpp" />
     <ClCompile Include="Source\GraphicsComponent.cpp" />
     <ClCompile Include="Source\GraphicsSystem.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\ShaderManager.cpp" />
+    <ClCompile Include="Source\Timer.cpp" />
+    <ClCompile Include="Source\TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\BaseSystem.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Engine.h" />
+    <ClInclude Include="Headers\Entity.h" />
     <ClInclude Include="Headers\GraphicsComponent.h" />
     <ClInclude Include="Headers\GraphicsSystem.h" />
     <ClInclude Include="Headers\OpenGLIncludes.h" />
     <ClInclude Include="Headers\GameWindow.h" />
     <ClInclude Include="Headers\ShaderManager.h" />
+    <ClInclude Include="Headers\Timer.h" />
+    <ClInclude Include="Headers\TransformComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\BasicShader.fs" />

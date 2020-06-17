@@ -8,29 +8,29 @@
 
 Mesh::Mesh()
 {
-  int VertexCount = 4;
+  VertexCount = 4;
   // Position Data
-  VertexPosition.resize(VertexCount);
-  VertexPosition[0] = glm::vec3( 1.0f,  1.0f, 0.0f); // Top Right
-  VertexPosition[1] = glm::vec3( 1.0f, -1.0f, 0.0f); // Bottom Right
-  VertexPosition[2] = glm::vec3(-1.0f, -1.0f, 0.0f); // Bottom Left
-  VertexPosition[3] = glm::vec3(-1.0f,  1.0f, 0.0f); // Top Left
+  VertexPositions.resize(VertexCount);
+  VertexPositions[0] = glm::vec3( 1.0f,  1.0f, 0.0f); // Top Right
+  VertexPositions[1] = glm::vec3( 1.0f, -1.0f, 0.0f); // Bottom Right
+  VertexPositions[2] = glm::vec3(-1.0f, -1.0f, 0.0f); // Bottom Left
+  VertexPositions[3] = glm::vec3(-1.0f,  1.0f, 0.0f); // Top Left
 
   // Color Data
-  VertexColor.resize(VertexCount);
+  VertexColors.resize(VertexCount);
   for (int i = 0; i < VertexCount; ++i)
   {
-    VertexColor[i] = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // blue
+    VertexColors[i] = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // blue
     // Temp
-    VertexPosition[i] *= 40.0f;
+    VertexPositions[i] *= 40.0f;
   }
 
   // Texture Data
-  VertexTexture.resize(VertexCount);
-  VertexTexture[0] = glm::vec2(1.0f, 0.0f); // Bottom Right
-  VertexTexture[1] = glm::vec2(1.0f, -1.0f); // Top Right
-  VertexTexture[2] = glm::vec2(0.0f, -1.0f); // Top Left
-  VertexTexture[3] = glm::vec2(0.0f, 0.0f); // Bottom Left
+  VertexTextureCoords.resize(VertexCount);
+  VertexTextureCoords[0] = glm::vec2(1.0f, 0.0f); // Bottom Right
+  VertexTextureCoords[1] = glm::vec2(1.0f, -1.0f); // Top Right
+  VertexTextureCoords[2] = glm::vec2(0.0f, -1.0f); // Top Left
+  VertexTextureCoords[3] = glm::vec2(0.0f, 0.0f); // Bottom Left
 
   Indices.resize(6);
   // Triangle 1
@@ -44,5 +44,35 @@ Mesh::Mesh()
 }
 
 Mesh::~Mesh(){}
+
+size_t Mesh::GetVertexCount()
+{
+  return VertexCount;
+}
+
+size_t Mesh::GetIndexCount()
+{
+  return Indices.size();
+}
+
+std::vector<glm::vec3>& Mesh::GetVertexPositions()
+{
+  return VertexPositions;
+}
+
+std::vector<glm::vec4>& Mesh::GetVertexColors()
+{
+  return VertexColors;
+}
+
+std::vector<glm::vec2>& Mesh::GetVertexTextureCoords()
+{
+  return VertexTextureCoords;
+}
+
+std::vector<unsigned int>& Mesh::GetIndices()
+{
+  return Indices;
+}
 
 
