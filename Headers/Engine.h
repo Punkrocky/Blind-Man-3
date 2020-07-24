@@ -12,6 +12,8 @@
 #include "Entity.h"
 #include "Timer.h"
 
+#include <vector>
+
 class Engine
 {
 public:
@@ -27,7 +29,7 @@ public:
 private:
   GameWindow* PtrGameWindow;
   GraphicsSystem* PtrGraphicsSys;
-  Entity* entity;
+  std::vector<EntityPtr> PtrEntities;
   Timer GameTimer;
   bool bShuttingDown;
   float dt;

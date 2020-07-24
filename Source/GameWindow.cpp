@@ -33,7 +33,7 @@ GameWindow::GameWindow()
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
   // Use glfw to make our window.
-  PtrGameWindow = glfwCreateWindow(1200, 700, "Blind Man 3", NULL, NULL);
+  PtrGameWindow = glfwCreateWindow(1200, 720, "Blind Man 3", NULL, NULL);
   // Check that the creation process did not error.
   if (PtrGameWindow == NULL)
   {

@@ -5,15 +5,38 @@
  * File: Engine.cpp
  **********************************************************************************************************************/
 #include "Engine.h"
+#include "Random.h"
 
 #include <iostream>
+
+static Random NumberGen(1000);
 
 Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
   bShuttingDown = false;
   PtrGraphicsSys = new GraphicsSystem;
-  entity = new Entity;
-  //entity->GetTransformComponent()->SetPosition(1000.0f, -500.0f);
+
+  glm::vec2 TempPosition((-1200.0f + DEFAULT_SCALE), (-720 + DEFAULT_SCALE));
+  glm::vec3 TempColor(1.0f);
+
+  int SizeI = ((800 / DEFAULT_SCALE));
+  int SizeJ = ((800 / DEFAULT_SCALE));
+
+  for (int i = 0; i < SizeI; ++i)
+  {
+    //TempColor.g = 1.0f - (TempPosition.y / 720);
+    for (int j = 0; j < SizeJ; ++j)
+    {
+      //TempColor.r = 1.0f - (TempPosition.x / 1200);
+      TempColor.r = NumberGen.GenerateRandomFloat(1.0f);
+      TempColor.g = NumberGen.GenerateRandomFloat(1.0f);
+      TempColor.b = NumberGen.GenerateRandomFloat(1.0f);
+      PtrEntities.emplace_back(new Entity(TempPosition, TempColor));
+      TempPosition.x += (DEFAULT_SCALE*2);
+    }
+    TempPosition.x = (-1200.0f + DEFAULT_SCALE);
+    TempPosition.y += (DEFAULT_SCALE*2);
+  }
 }
 
 Engine::~Engine()
@@ -37,7 +60,7 @@ void Engine::Update(float dt)
     //std::cout << dt << "\n";
     GameTimer.StartFrame();
 
-    PtrGraphicsSys->Update(dt, entity);
+    PtrGraphicsSys->Update(dt, PtrEntities);
 
     if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()))
     {

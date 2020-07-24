@@ -5,7 +5,6 @@
  * File: Camera.cpp
  **********************************************************************************************************************/
 #include "Camera.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera()
 {
@@ -42,8 +41,10 @@ glm::mat4 Camera::GetViewMatrix()
   if (bDirty)
   {
     glm::mat4 translate = glm::translate(glm::mat4(1.0f), Position);
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     ViewMatrix = glm::ortho(-Scale.x, Scale.x, -Scale.y, Scale.y);
 
+    ViewMatrix *= rotation;
     ViewMatrix *= translate;
     bDirty = false;
   }

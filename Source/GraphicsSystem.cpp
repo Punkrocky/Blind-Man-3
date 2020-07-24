@@ -9,7 +9,9 @@
 
 #include "GraphicsSystem.h"
 #include "GameWindow.h"
+#include "Input.h"
 
+Camera GraphicsSystem::Viewport;
 
 void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                               const GLchar* message, const void* userParam)
@@ -77,35 +79,91 @@ void DestroySystem(GraphicsSystem* system)
 
 static float Tdt;
 
-void GraphicsSystem::Update(float dt, Entity* entity)
+void GraphicsSystem::Update(float dt, std::vector<EntityPtr> entities)
 {
-  Tdt += dt;
-  VAOPrepare(entity->GetGraphicsComponent());
-
   // Remove anything drawn to the last buffer
   glClear(GL_COLOR_BUFFER_BIT);
-  // Tell OpenGL the shader we are using
-  glUseProgram(ShManager.GetShaderID(0));
 
-  // Get the View matrix
-  glm::mat4 Matrix = Viewport.GetViewMatrix();
-  // Combine the view matrix and the modle matrix together
-  Matrix *= entity->GetTransformComponent()->GetModelMatrix();
-  // Send the matrix combination to the shader
-  glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+  Tdt += dt;
+  size_t Size = entities.size();
 
-  // Bind the Vertex array for the current entity
-  glBindVertexArray(GeometryData.VAO);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-  glBindVertexArray(0);
+  for (int i = 0; i < Size; ++i)
+  {
+    VAOPrepare(entities[i]->GetGraphicsComponent());
 
+    // Tell OpenGL the shader we are using
+    glUseProgram(ShManager.GetShaderID(0));
+
+    // Get the View matrix
+    glm::mat4 Matrix = Viewport.GetViewMatrix();
+    // Combine the view matrix and the modle matrix together
+    Matrix *= entities[i]->GetTransformComponent()->GetModelMatrix();
+    // Send the matrix combination to the shader
+    glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+
+    // Bind the Vertex array for the current entity
+    glBindVertexArray(GeometryData.VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+  }
 
   glfwSwapBuffers(Window);
   glfwPollEvents();
-
-  entity->GetTransformComponent()->SetPosition(sinf(Tdt) * 1200.0f, cosf(Tdt) * 700.0f);
 }
 
+// TODO: comment this shit
+void GraphicsSystem::MoveCamera(int n)
+{
+  glm::vec3 pos = Viewport.GetPosition();
+  glm::vec3 scale = Viewport.GetScale();
+  float angle = Viewport.GetRotation();
+
+  glm::vec3 POS(0.0f, 0.0f, 0.0f);
+  glm::mat4 Rotation = glm::rotate(glm::mat4(1.0f), glm::radians(180-angle), glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+  switch (n)
+  {
+  case UP:
+    POS.y += DEFAULT_SCALE;
+    POS = Rotation * glm::vec4(POS, 1.0f);
+    pos += POS;
+    break;
+  case DOWN:
+    POS.y += DEFAULT_SCALE;
+    POS = Rotation * glm::vec4(POS, 1.0f);
+    pos -= POS;
+    break;
+  case LEFT:
+    POS.x += DEFAULT_SCALE;
+    POS = Rotation * glm::vec4(POS, 1.0f);
+    pos -= POS;
+    break;
+  case RIGHT:
+    POS.x += DEFAULT_SCALE;
+    POS = Rotation * glm::vec4(POS, 1.0f);
+    pos += POS;
+    break;
+  case BACK:
+    scale *= 1.1f;
+    break;
+  case FORWARD:
+    scale *= 0.9f;
+    break;
+  case ROTATE_CCW:
+    angle -= 10.0f;
+    break;
+  case ROTATE_CW:
+    angle += 10.0f;
+    break;
+  default:
+    return;
+  }
+  
+  Viewport.SetPosition(pos);
+  Viewport.SetScale(scale);
+  Viewport.SetRotation(angle);
+}
 
 
 /*****************************| PRIVATE MEMBERS |*****************************/
@@ -122,6 +180,8 @@ void GraphicsSystem::Init()
   glm::ivec3 WindowSize(1);
   glfwGetWindowSize(Window, &WindowSize.x, &WindowSize.y);
   Viewport.SetScale(WindowSize);
+
+  glfwSetKeyCallback(Window, KeyboardInputCallback);
 
   glewExperimental = true;
   if (glewInit() != GLEW_OK)

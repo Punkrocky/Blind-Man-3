@@ -8,14 +8,17 @@
 
 #include "OpenGLIncludes.h"
 
+#define DEFAULT_SCALE 40.0f
+
 class TransformComponent
 {
 public:
   TransformComponent();
+  TransformComponent(glm::vec2 position, glm::vec2 scale, float angle = 0.0f);
   ~TransformComponent();
 
   void SetPosition(glm::vec3 position);
-  void SetPosition(float x, float y, float z=0.0f);
+  void SetPosition(float x, float y, float z = 0.0f);
 
   void SetScale(glm::vec2 scale);
   void SetScale(float x, float y);
@@ -31,3 +34,5 @@ private:
   bool bDirty;
   glm::mat4 ModelMatrix;
 };
+
+typedef TransformComponent* TransformComponentPtr;

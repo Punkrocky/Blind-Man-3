@@ -9,9 +9,18 @@
 
 TransformComponent::TransformComponent()
 {
-  Positon = glm::vec3(1.0f, 0.0f, 0.0f);
-  Scale = glm::vec2(1.0f, 1.0f);
+  Positon = glm::vec3(0.0f, 0.0f, 0.0f);
+  Scale = glm::vec2(DEFAULT_SCALE, DEFAULT_SCALE);
   Angle = 0.0f;
+  ModelMatrix = glm::mat4(1.0f);
+  bDirty = true;
+}
+
+TransformComponent::TransformComponent(glm::vec2 position, glm::vec2 scale, float angle)
+{
+  Positon = glm::vec3(position, 0.0f);
+  Scale = scale;
+  Angle = angle;
   ModelMatrix = glm::mat4(1.0f);
   bDirty = true;
 }

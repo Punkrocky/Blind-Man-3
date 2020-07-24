@@ -15,22 +15,19 @@ class Entity
 {
 public:
   Entity();
+  Entity(glm::vec2 position, glm::vec3 color);
   friend void DestroyEntity(Entity* entity);
 
-  TransformComponent* GetTransformComponent()
-  {
-    return TransformComp;
-  }
+  TransformComponentPtr GetTransformComponent();
+  GraphicsComponentPtr GetGraphicsComponent();
 
-  GraphicsComponent* GetGraphicsComponent()
-  {
-    return GraphicsComp;
-  }
 
 private:
   ~Entity();
 
 
-  GraphicsComponent* GraphicsComp;
-  TransformComponent* TransformComp;
+  GraphicsComponentPtr GraphicsComp;
+  TransformComponentPtr TransformComp;
 };
+
+typedef Entity* EntityPtr;

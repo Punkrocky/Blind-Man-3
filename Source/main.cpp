@@ -18,7 +18,7 @@ int main(void)
   GameWindow* PtrWindow = new GameWindow();
   std::cout << "Hello World!\n";
 
-  // Check that we successfully created a window.
+  // Check that we successfully created a window
   if (PtrWindow)
   {
     Engine GameEngine(PtrWindow);

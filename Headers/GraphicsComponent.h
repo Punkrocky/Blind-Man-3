@@ -9,6 +9,7 @@
 
 #include "OpenGLIncludes.h"
 
+
 class Mesh
 {
 public:
@@ -22,6 +23,14 @@ public:
   std::vector<glm::vec4>& GetVertexColors();
   std::vector<glm::vec2>& GetVertexTextureCoords();
   std::vector<unsigned int>& GetIndices();
+
+  void SetVertexColors(glm::vec3 color)
+  {
+    for (int i = 0; i < VertexCount; ++i)
+    {
+      VertexColors[i] = glm::vec4(color, 1.0f);
+    }
+  }
 
 private:
   std::vector<glm::vec3> VertexPositions; // XYZ
@@ -61,6 +70,12 @@ public:
     mesh = new Mesh;
   }
 
+  GraphicsComponent(glm::vec3 color)
+  {
+    mesh = new Mesh;
+    mesh->SetVertexColors(color);
+  }
+
   ~GraphicsComponent()
   {
     delete mesh;
@@ -76,3 +91,5 @@ private:
   //Texture* texture;
   //Shader* shader;
 };
+
+typedef GraphicsComponent* GraphicsComponentPtr;

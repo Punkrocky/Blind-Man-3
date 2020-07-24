@@ -22,7 +22,7 @@ Mesh::Mesh()
   {
     VertexColors[i] = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f); // blue
     // Temp
-    VertexPositions[i] *= 40.0f;
+    //VertexPositions[i] *= 40.0f;
   }
 
   // Texture Data

@@ -20,7 +20,10 @@ public:
   GraphicsSystem();
   friend void DestroySystem(GraphicsSystem* system);
 
-  void Update(float dt, Entity* entity);
+  void Update(float dt, std::vector<EntityPtr> entities);
+
+  static void MoveCamera(int n);
+
 
 private:
   void Init();
@@ -44,5 +47,5 @@ private:
 
   GLFWwindow* Window;
   ShaderManager ShManager;
-  Camera Viewport;
+  static Camera Viewport;
 };

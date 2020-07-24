@@ -15,6 +15,21 @@ public:
   Camera();
   ~Camera();
 
+  glm::vec3 GetPosition()
+  {
+    return Position;
+  }
+
+  glm::vec3 GetScale()
+  {
+    return Scale;
+  }
+
+  float GetRotation()
+  {
+    return Rotation;
+  }
+
   void SetPosition(glm::vec3 position);
   void SetScale(glm::vec3 scale);
   void SetRotation(float rotation);
