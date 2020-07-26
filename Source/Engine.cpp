@@ -16,11 +16,11 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
   bShuttingDown = false;
   PtrGraphicsSys = new GraphicsSystem;
 
-  glm::vec2 TempPosition((-1200.0f + DEFAULT_SCALE), (-720 + DEFAULT_SCALE));
+  glm::vec2 TempPosition((-80.0f + DEFAULT_SCALE), (-80 + DEFAULT_SCALE));
   glm::vec3 TempColor(1.0f);
 
-  int SizeI = ((800 / DEFAULT_SCALE));
-  int SizeJ = ((800 / DEFAULT_SCALE));
+  int SizeI = ((2000 / DEFAULT_SCALE));
+  int SizeJ = ((2000 / DEFAULT_SCALE));
 
   for (int i = 0; i < SizeI; ++i)
   {
@@ -34,7 +34,7 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
       PtrEntities.emplace_back(new Entity(TempPosition, TempColor));
       TempPosition.x += (DEFAULT_SCALE*2);
     }
-    TempPosition.x = (-1200.0f + DEFAULT_SCALE);
+    TempPosition.x = (-80.0f + DEFAULT_SCALE);
     TempPosition.y += (DEFAULT_SCALE*2);
   }
 }

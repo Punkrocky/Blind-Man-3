@@ -66,84 +66,106 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
             << "Type: " << Type.c_str() << "Severity: " << Severity.c_str() << "Message: " << message << "\n\n";
 }
 
+
 GraphicsSystem::GraphicsSystem()
 {
-  //mesh = new Mesh;
   this->Init();
 }
+
 
 void DestroySystem(GraphicsSystem* system)
 {
   delete system;
 }
 
-static float Tdt;
 
 void GraphicsSystem::Update(float dt, std::vector<EntityPtr> entities)
 {
   // Remove anything drawn to the last buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
-  Tdt += dt;
   size_t Size = entities.size();
+
+  BatchPositions.resize(Size * VERTEX_COUNT);
+  BatchColors.resize(Size * VERTEX_COUNT);
+  BatchIndices.resize(Size * 6);
 
   for (int i = 0; i < Size; ++i)
   {
-    VAOPrepare(entities[i]->GetGraphicsComponent());
-
-    // Tell OpenGL the shader we are using
-    glUseProgram(ShManager.GetShaderID(0));
-
-    // Get the View matrix
-    glm::mat4 Matrix = Viewport.GetViewMatrix();
-    // Combine the view matrix and the modle matrix together
-    Matrix *= entities[i]->GetTransformComponent()->GetModelMatrix();
-    // Send the matrix combination to the shader
-    glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
-
-    // Bind the Vertex array for the current entity
-    glBindVertexArray(GeometryData.VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
+    BatchPrepare(entities[i]->GetGraphicsComponent(), entities[i]->GetTransformComponent()->GetModelMatrix(), i);
   }
+
+  VAOPrepare(BatchPositions, BatchColors, BatchIndices);
+
+  // Tell OpenGL the shader we are using
+  glUseProgram(ShManager.GetShaderID(0));
+
+  // Get the View matrix
+  glm::mat4 Matrix = Viewport.GetViewMatrix();
+  // Send the matrix combination to the shader
+  glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+
+  // Bind the Vertex array for the current entity
+  glBindVertexArray(GeometryData.VAO);
+  glDrawElements(GL_TRIANGLES, BatchIndices.size(), GL_UNSIGNED_INT, 0);
+  glBindVertexArray(0);
 
   glfwSwapBuffers(Window);
   glfwPollEvents();
 }
 
-// TODO: comment this shit
-void GraphicsSystem::MoveCamera(int n)
+
+void GraphicsSystem::MoveCamera(int Case)
 {
+  // Current values of the camera
   glm::vec3 pos = Viewport.GetPosition();
   glm::vec3 scale = Viewport.GetScale();
   float angle = Viewport.GetRotation();
 
-  glm::vec3 POS(0.0f, 0.0f, 0.0f);
-  glm::mat4 Rotation = glm::rotate(glm::mat4(1.0f), glm::radians(180-angle), glm::vec3(0.0f, 0.0f, 1.0f));
+  /* Convert the angle to radians and change the perception of the angle so that it will appear like the camera is 
+   * moving. We could get a similar effect without the 180 - X if we flipped the sign when adding the RotationOffset
+   * to pos. */
+  float rads = glm::radians(180 - angle);
 
+  /* Create a rotation matrix to calculate the anti rotation of the camera so that when we move the camera the 
+   * keyboard inputs will be relative to the monitor rather than the world orientation. */
+  glm::mat2 RotationMat(glm::cos(rads), glm::sin(rads), -(glm::sin(rads)), glm::cos(rads));
 
-  switch (n)
+  // Use the given value to determine how the camera should react
+  switch (Case)
   {
   case UP:
-    POS.y += DEFAULT_SCALE;
-    POS = Rotation * glm::vec4(POS, 1.0f);
-    pos += POS;
+  {
+    // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
+    glm::vec2 RotateOffset(0.0f, DEFAULT_SCALE);
+    RotateOffset = RotationMat * RotateOffset;
+    pos += glm::vec3(RotateOffset, 0.0f);
     break;
+  }
   case DOWN:
-    POS.y += DEFAULT_SCALE;
-    POS = Rotation * glm::vec4(POS, 1.0f);
-    pos -= POS;
+  {
+    // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
+    glm::vec2 RotateOffset(0.0f, DEFAULT_SCALE);
+    RotateOffset = RotationMat * RotateOffset;
+    pos -= glm::vec3(RotateOffset, 0.0f);
     break;
+  }
   case LEFT:
-    POS.x += DEFAULT_SCALE;
-    POS = Rotation * glm::vec4(POS, 1.0f);
-    pos -= POS;
+  {
+    // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
+    glm::vec2 RotateOffset(DEFAULT_SCALE, 0.0f);
+    RotateOffset = RotationMat * RotateOffset;
+    pos -= glm::vec3(RotateOffset, 0.0f);
     break;
+  }
   case RIGHT:
-    POS.x += DEFAULT_SCALE;
-    POS = Rotation * glm::vec4(POS, 1.0f);
-    pos += POS;
+  {
+    // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
+    glm::vec2 RotateOffset(DEFAULT_SCALE, 0.0f);
+    RotateOffset = RotationMat * RotateOffset;
+    pos += glm::vec3(RotateOffset, 0.0f);
     break;
+  }
   case BACK:
     scale *= 1.1f;
     break;
@@ -160,6 +182,7 @@ void GraphicsSystem::MoveCamera(int n)
     return;
   }
   
+  // Set all of the camera variables in case any were changed.
   Viewport.SetPosition(pos);
   Viewport.SetScale(scale);
   Viewport.SetRotation(angle);
@@ -172,6 +195,7 @@ GraphicsSystem::~GraphicsSystem()
 {
   this->Shutdown();
 }
+
 
 void GraphicsSystem::Init()
 {
@@ -215,6 +239,7 @@ void GraphicsSystem::Init()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
+
 void GraphicsSystem::Shutdown()
 {
   glDeleteBuffers(1, &GeometryData.PositionVBO);
@@ -226,6 +251,7 @@ void GraphicsSystem::Shutdown()
   glDeleteProgram(ShManager.GetShaderID(0));
 }
 
+
 void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
 {
   Mesh* mesh = comp->GetMesh();
@@ -234,20 +260,63 @@ void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
 
   // Build a buffer for the position data for the VAO
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, mesh->GetVertexCount() * sizeof(glm::vec3), &mesh->GetVertexPositions()[0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec3), &mesh->GetVertexPositions()[0], GL_DYNAMIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
   // Build a buffer for the Color data for the VAO
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
-  glBufferData(GL_ARRAY_BUFFER, mesh->GetVertexCount() * sizeof(glm::vec4), &mesh->GetVertexColors()[0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec4), &mesh->GetVertexColors()[0], GL_DYNAMIC_DRAW);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIndexCount() * sizeof(unsigned int), &mesh->GetIndices()[0], GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIndexCount() * sizeof(unsigned int), &mesh->GetIndices()[0], GL_DYNAMIC_DRAW);
 
   glBindVertexArray(0);
+}
+
+
+void GraphicsSystem::VAOPrepare(std::vector<glm::vec3> positions, std::vector<glm::vec4> colors, std::vector<unsigned int> indicies)
+{
+  glBindVertexArray(GeometryData.VAO);
+
+  // Build a buffer for the position data for the VAO
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+  glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_DYNAMIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  // Build a buffer for the Color data for the VAO
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
+  glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec4), &colors[0], GL_DYNAMIC_DRAW);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(unsigned int), &indicies[0], GL_DYNAMIC_DRAW);
+
+  glBindVertexArray(0);
+}
+
+
+void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, glm::mat4 modleMatrix, int index)
+{
+  Mesh* ComponentMesh = comp->GetMesh();
+
+  for (int i = 0; i < VERTEX_COUNT; ++i)
+  {
+    BatchPositions[index * VERTEX_COUNT + i] = modleMatrix * glm::vec4(ComponentMesh->GetVertexPositions()[i], 1.0f);
+    BatchColors[index * VERTEX_COUNT + i] = ComponentMesh->GetVertexColors()[i];
+  }
+
+  std::vector<unsigned int> tempind = ComponentMesh->GetIndices();
+  for (int i = 0; i < 6; ++i)
+  {
+    BatchIndices[index * 6 + i] = tempind[i] + (index * 4);
+  }
 }

@@ -9,6 +9,7 @@
 
 #include "OpenGLIncludes.h"
 
+#define VERTEX_COUNT 4
 
 class Mesh
 {
@@ -16,7 +17,6 @@ public:
   Mesh();
   ~Mesh();
 
-  size_t GetVertexCount();
   size_t GetIndexCount();
 
   std::vector<glm::vec3>& GetVertexPositions();
@@ -26,7 +26,7 @@ public:
 
   void SetVertexColors(glm::vec3 color)
   {
-    for (int i = 0; i < VertexCount; ++i)
+    for (int i = 0; i < VERTEX_COUNT; ++i)
     {
       VertexColors[i] = glm::vec4(color, 1.0f);
     }
@@ -37,7 +37,7 @@ private:
   std::vector<glm::vec4> VertexColors;    // RGBA
   std::vector<glm::vec2> VertexTextureCoords;  // UV
   std::vector<unsigned int> Indices;
-  int VertexCount;
+  //int VertexCount;
 };
 
 class Texture

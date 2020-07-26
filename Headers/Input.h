@@ -32,7 +32,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(UP);
-      std::cout << "W Pressed!\n";
+      //std::cout << "W Pressed!\n";
     }
   }
   break;
@@ -41,7 +41,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(DOWN);
-      std::cout << "S Pressed!\n";
+      //std::cout << "S Pressed!\n";
     }
   }
   break;
@@ -50,7 +50,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(LEFT);
-      std::cout << "A Pressed!\n";
+      //std::cout << "A Pressed!\n";
     }
   }
   break;
@@ -59,7 +59,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(RIGHT);
-      std::cout << "D Pressed!\n";
+      //std::cout << "D Pressed!\n";
     }
   }
   break;
@@ -68,7 +68,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(FORWARD);
-      std::cout << "R Pressed!\n";
+      //std::cout << "R Pressed!\n";
     }
   }
   break;
@@ -77,7 +77,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(BACK);
-      std::cout << "F Pressed!\n";
+      //std::cout << "F Pressed!\n";
     }
   }
   break;
@@ -86,7 +86,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(ROTATE_CCW);
-      std::cout << "Q Pressed!\n";
+      //std::cout << "Q Pressed!\n";
     }
   }
   break;
@@ -95,7 +95,7 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
       GraphicsSystem::MoveCamera(ROTATE_CW);
-      std::cout << "E Pressed!\n";
+      //std::cout << "E Pressed!\n";
     }
   }
   break;
