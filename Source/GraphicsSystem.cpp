@@ -1,8 +1,8 @@
-/***********************************************************************************************************************
- * Project: Blind Man 3
- * Autor: Matthew LaDouceur
- * Date: 4-28-2020
- * File: GraphicsSystem.cpp
+/*******************************************************************************************************************//**
+ * \file GraphicsSystem.cpp
+ * \author Matthew LaDouceur
+ * \date 4-28-2020
+ * \brief Implimentation for the Graphics System
  **********************************************************************************************************************/
 #include <iostream>
 #include <string>
@@ -11,8 +11,35 @@
 #include "GameWindow.h"
 #include "Input.h"
 
+
 Camera GraphicsSystem::Viewport;
 
+
+/*!
+ * \brief Prints OpenGL debugging info and error messages to the consle
+ *
+ * \param source
+ *  describing where the message came from
+ *
+ * \param type
+ *  describing the type of message
+ *
+ * \param id
+ *  value of the message id
+ *
+ * \param severity
+ *  describing the severity of the message
+ *
+ * \param length
+ *  the length of the message being sent
+ *
+ * \param message
+ *  the message being sent
+ *
+ * \param userParam
+ *  an empty parameter for any extra user data
+ *
+ */
 void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                               const GLchar* message, const void* userParam)
 {
@@ -67,43 +94,75 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 }
 
 
+/*!
+ * \brief Default constructor for the Graphics System
+ *
+ */
 GraphicsSystem::GraphicsSystem()
 {
   this->Init();
 }
 
 
+/*!
+ * \brief Explicit destructor for the graphics system to dissuade people from accidentaly makeing new Graphics systems
+ *
+ * \param system
+ *  Pointer the the graphics system that we are deconstructing
+ */
 void DestroySystem(GraphicsSystem* system)
 {
   delete system;
 }
 
 
-void GraphicsSystem::Update(float dt, std::vector<EntityPtr> entities)
+/*!
+ * \brief Update the graphics system
+ *
+ * \param dt
+ *  The delta time that has passed since the last frame
+ *
+ * \param entities
+ *  A vector of entity pointers that need to be drawn to the screen this frame
+ */
+void GraphicsSystem::Update(float dt, const std::vector<EntityPtr>& entities)
 {
   // Remove anything drawn to the last buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
   size_t Size = entities.size();
 
-  BatchPositions.resize(Size * VERTEX_COUNT);
-  BatchColors.resize(Size * VERTEX_COUNT);
-  BatchIndices.resize(Size * 6);
-
-  for (int i = 0; i < Size; ++i)
+  // If the data in our entities has changed we need to update our render data
+  if (Size != EntityCount)
   {
-    BatchPrepare(entities[i]->GetGraphicsComponent(), entities[i]->GetTransformComponent()->GetModelMatrix(), i);
+    EntityCount = Size;
+
+    BatchPositions.resize(EntityCount * VERTEX_COUNT);
+    BatchColors.resize(EntityCount * VERTEX_COUNT);
+    BatchTextureUVs.resize(EntityCount * VERTEX_COUNT);
+    BatchIndices.resize(EntityCount * INDEX_COUNT);
+
+
+    for (int i = 0; i < EntityCount; ++i)
+    {
+      BatchPrepare(entities[i]->GetGraphicsComponent(), entities[i]->GetTransformComponent()->GetModelMatrix(), i);
+    }
+
+    VAOPrepare(BatchPositions, BatchColors, BatchTextureUVs, BatchIndices);
   }
 
-  VAOPrepare(BatchPositions, BatchColors, BatchIndices);
+  GLuint ProgramID = ShManager.GetShaderID(entities[0]->GetGraphicsComponent()->GetShaderType());
 
   // Tell OpenGL the shader we are using
-  glUseProgram(ShManager.GetShaderID(0));
+  glUseProgram(ProgramID);
 
   // Get the View matrix
   glm::mat4 Matrix = Viewport.GetViewMatrix();
   // Send the matrix combination to the shader
-  glUniformMatrix4fv(glGetUniformLocation(ShManager.GetShaderID(0), "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+  glUniformMatrix4fv(glGetUniformLocation(ProgramID, "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+
+
+  glBindTexture(GL_TEXTURE_2D, TxManager.GetTextureID(entities[0]->GetGraphicsComponent()->GetTextureType()));
 
   // Bind the Vertex array for the current entity
   glBindVertexArray(GeometryData.VAO);
@@ -115,6 +174,12 @@ void GraphicsSystem::Update(float dt, std::vector<EntityPtr> entities)
 }
 
 
+/*!
+ * \brief Given a value we determine how the camera should move.
+ *
+ * \param Case
+ *  Value needed to determine the required action for the camera.
+ */
 void GraphicsSystem::MoveCamera(int Case)
 {
   // Current values of the camera
@@ -137,7 +202,7 @@ void GraphicsSystem::MoveCamera(int Case)
   case UP:
   {
     // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
-    glm::vec2 RotateOffset(0.0f, DEFAULT_SCALE);
+    glm::vec2 RotateOffset(0.0f, scale.y / (DEFAULT_SCALE));
     RotateOffset = RotationMat * RotateOffset;
     pos += glm::vec3(RotateOffset, 0.0f);
     break;
@@ -145,7 +210,7 @@ void GraphicsSystem::MoveCamera(int Case)
   case DOWN:
   {
     // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
-    glm::vec2 RotateOffset(0.0f, DEFAULT_SCALE);
+    glm::vec2 RotateOffset(0.0f, scale.y / (DEFAULT_SCALE));
     RotateOffset = RotationMat * RotateOffset;
     pos -= glm::vec3(RotateOffset, 0.0f);
     break;
@@ -153,7 +218,7 @@ void GraphicsSystem::MoveCamera(int Case)
   case LEFT:
   {
     // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
-    glm::vec2 RotateOffset(DEFAULT_SCALE, 0.0f);
+    glm::vec2 RotateOffset(scale.x / (DEFAULT_SCALE), 0.0f);
     RotateOffset = RotationMat * RotateOffset;
     pos -= glm::vec3(RotateOffset, 0.0f);
     break;
@@ -161,7 +226,7 @@ void GraphicsSystem::MoveCamera(int Case)
   case RIGHT:
   {
     // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
-    glm::vec2 RotateOffset(DEFAULT_SCALE, 0.0f);
+    glm::vec2 RotateOffset(scale.x / (DEFAULT_SCALE), 0.0f);
     RotateOffset = RotationMat * RotateOffset;
     pos += glm::vec3(RotateOffset, 0.0f);
     break;
@@ -173,10 +238,10 @@ void GraphicsSystem::MoveCamera(int Case)
     scale *= 0.9f;
     break;
   case ROTATE_CCW:
-    angle -= 10.0f;
+    angle += 5.0f;
     break;
   case ROTATE_CW:
-    angle += 10.0f;
+    angle -= 5.0f;
     break;
   default:
     return;
@@ -189,14 +254,23 @@ void GraphicsSystem::MoveCamera(int Case)
 }
 
 
-/*****************************| PRIVATE MEMBERS |*****************************/
+/**********************************************************************************************************************\
+|*************************************************| PRIVATE MEMBERS |**************************************************|
+\**********************************************************************************************************************/
 
+/*!
+  * \brief Private destructor will make the class only dynamically allocatable.
+  *
+  */
 GraphicsSystem::~GraphicsSystem()
 {
   this->Shutdown();
 }
 
-
+/*!
+ * \brief Initalizer for the Graphics system and OpenGL
+ *
+ */
 void GraphicsSystem::Init()
 {
   Window = GameWindow::GetPtrGameWindow();
@@ -207,7 +281,7 @@ void GraphicsSystem::Init()
 
   glfwSetKeyCallback(Window, KeyboardInputCallback);
 
-  glewExperimental = true;
+  glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
   {
     std::cerr << "Failed to init GLEW\n";
@@ -215,6 +289,7 @@ void GraphicsSystem::Init()
     return;
   }
 
+  // Set the clear color to a nice blue-gray background color
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
   glEnable(GL_BLEND);
@@ -227,8 +302,7 @@ void GraphicsSystem::Init()
 
   // Shader Manager
   ShManager.Init();
-  // Texture Manager
-  // TODO: Texture Manager
+  TxManager.Init();
 
   glGenVertexArrays(1, &GeometryData.VAO);
   glGenBuffers(1, &GeometryData.PositionVBO);
@@ -240,6 +314,10 @@ void GraphicsSystem::Init()
 }
 
 
+/*!
+ * \brief Shutsdown the Graphics system and delets any GPU memory and allocated variables
+ *
+ */
 void GraphicsSystem::Shutdown()
 {
   glDeleteBuffers(1, &GeometryData.PositionVBO);
@@ -248,10 +326,18 @@ void GraphicsSystem::Shutdown()
   glDeleteBuffers(1, &GeometryData.EBO);
   glDeleteVertexArrays(1, &GeometryData.VAO);
 
-  glDeleteProgram(ShManager.GetShaderID(0));
+  //TODO [2]: Create a shutdown function for the Texture and Shader managers
+  glDeleteProgram(ShManager.GetShaderID(Shader::ShaderType::Basic_s));
 }
 
 
+/*!
+ * \brief Attaches all neccessary information needed to draw a mesh to the Geometry VAO
+ *
+ * \param comp
+ *  A pointer to a graphics component which contains all the information needed to draw the entity
+ *
+ */
 void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
 {
   Mesh* mesh = comp->GetMesh();
@@ -270,16 +356,26 @@ void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
+  //TODO [4]: Add textureUV's to the old VAOPrepare function.
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->GetIndexCount() * sizeof(unsigned int), &mesh->GetIndices()[0], GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDEX_COUNT * sizeof(unsigned int), &mesh->GetIndices()[0], GL_DYNAMIC_DRAW);
 
   glBindVertexArray(0);
 }
 
 
-void GraphicsSystem::VAOPrepare(std::vector<glm::vec3> positions, std::vector<glm::vec4> colors, std::vector<unsigned int> indicies)
+/*!
+ * \brief Attaches all neccessary information needed to draw a mesh to the Geometry VAO
+ *
+ * \param comp
+ *  A pointer to a graphics component which contains all the information needed to draw the entity
+ *
+ */
+void GraphicsSystem::VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
+                                const std::vector<glm::vec2>& textureUV, const std::vector<unsigned int>& indicies)
 {
   glBindVertexArray(GeometryData.VAO);
 
@@ -295,6 +391,11 @@ void GraphicsSystem::VAOPrepare(std::vector<glm::vec3> positions, std::vector<gl
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.TextureVBO);
+  glBufferData(GL_ARRAY_BUFFER, textureUV.size() * sizeof(glm::vec2), &textureUV[0], GL_DYNAMIC_DRAW);
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
@@ -304,19 +405,39 @@ void GraphicsSystem::VAOPrepare(std::vector<glm::vec3> positions, std::vector<gl
 }
 
 
-void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, glm::mat4 modleMatrix, int index)
+/*!
+ * \brief Adds the data from the given component to the graphics system for a batch render
+ *
+ * \param comp
+ *  The graphics component we are adding to the batch render pass
+ */
+void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index)
 {
   Mesh* ComponentMesh = comp->GetMesh();
 
+  // Calculate the world positon
+  glm::mat4 PositionComposit = modleMatrix * ComponentMesh->GetVertexPositions();
+  // Store the world positon data
   for (int i = 0; i < VERTEX_COUNT; ++i)
   {
-    BatchPositions[index * VERTEX_COUNT + i] = modleMatrix * glm::vec4(ComponentMesh->GetVertexPositions()[i], 1.0f);
-    BatchColors[index * VERTEX_COUNT + i] = ComponentMesh->GetVertexColors()[i];
+    BatchPositions[index * VERTEX_COUNT + i] = PositionComposit[i];
   }
 
-  std::vector<unsigned int> tempind = ComponentMesh->GetIndices();
-  for (int i = 0; i < 6; ++i)
+  // Store the color and texture UV data
+  for (int i = 0; i < VERTEX_COUNT; ++i)
   {
-    BatchIndices[index * 6 + i] = tempind[i] + (index * 4);
+    int BatchIndex = index * VERTEX_COUNT + i;
+
+    BatchColors[BatchIndex] = ComponentMesh->GetVertexColors()[i];
+    BatchTextureUVs[BatchIndex] = ComponentMesh->GetVertexTextureCoords()[i];
+  }
+
+  // Get the generic index values
+  std::vector<unsigned int> tempind = ComponentMesh->GetIndices();
+  // Store the new indices into the composit mesh data vectors
+  for (int i = 0; i < INDEX_COUNT; ++i)
+  {
+    // Clalculate the new index
+    BatchIndices[index * INDEX_COUNT + i] = tempind[i] + (index * VERTEX_COUNT);
   }
 }

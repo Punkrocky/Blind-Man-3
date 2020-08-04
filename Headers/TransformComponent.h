@@ -15,6 +15,7 @@ class TransformComponent
 public:
   TransformComponent();
   TransformComponent(glm::vec2 position, glm::vec2 scale, float angle = 0.0f);
+  TransformComponent(const TransformComponent& rhs);
   ~TransformComponent();
 
   void SetPosition(glm::vec3 position);

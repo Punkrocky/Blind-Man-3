@@ -25,6 +25,15 @@ TransformComponent::TransformComponent(glm::vec2 position, glm::vec2 scale, floa
   bDirty = true;
 }
 
+TransformComponent::TransformComponent(const TransformComponent& rhs)
+{
+  this->Positon = rhs.Positon;
+  this->Scale = rhs.Scale;
+  this->Angle = rhs.Angle;
+  this->ModelMatrix = rhs.ModelMatrix;
+  this->bDirty = rhs.bDirty;
+}
+
 TransformComponent::~TransformComponent(){}
 
 

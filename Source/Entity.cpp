@@ -1,38 +1,60 @@
-/***********************************************************************************************************************
- * Project: Blind Man 3
- * Autor: Matthew LaDouceur
- * Date: 5-28-2020
- * File: Entity.cpp
+/*******************************************************************************************************************//**
+ * \file Entity.cpp
+ * \brief Blind Man 3
+ * \author Matthew LaDouceur
+ * \date 5-28-2020
  **********************************************************************************************************************/
 
 #include "Entity.h"
 
 Entity::Entity()
 {
-  GraphicsComp = new GraphicsComponent;
-  TransformComp = new TransformComponent;
+  // Create an empty Entity
+  GraphicsComp = nullptr;
+  TransformComp = nullptr;
 }
 
-Entity::Entity(glm::vec2 position, glm::vec3 color)
+
+Entity::Entity(const TransformComponent& transform, const GraphicsComponent& graphics)
 {
-  GraphicsComp = new GraphicsComponent(color);
-  TransformComp = new TransformComponent(position, glm::vec2(DEFAULT_SCALE, DEFAULT_SCALE));
+  SetTransformComponent(transform);
+  SetGraphicsComponent(graphics);
 }
+
 
 void DestroyEntity(Entity* entity)
 {
   delete entity;
 }
 
-TransformComponentPtr Entity::GetTransformComponent()
+
+TransformComponentPtr Entity::GetTransformComponent() const
 {
   return TransformComp;
 }
 
-GraphicsComponentPtr Entity::GetGraphicsComponent()
+
+GraphicsComponentPtr Entity::GetGraphicsComponent() const
 {
   return GraphicsComp;
 }
+
+
+
+void Entity::SetTransformComponent(const TransformComponent& transform)
+{
+  TransformComp = new TransformComponent(transform);
+}
+
+
+void Entity::SetGraphicsComponent(const GraphicsComponent& graphics)
+{
+  GraphicsComp = new GraphicsComponent(graphics);
+}
+
+/**********************************************************************************************************************\
+|*************************************************| PRIVATE MEMBERS |**************************************************|
+\**********************************************************************************************************************/
 
 Entity::~Entity()
 {

@@ -1,33 +1,32 @@
 /***********************************************************************************************************************
  * Project: Blind Man 3
  * Autor: Matthew LaDouceur
- * Date: 4-28-2020
- * File: GraphicsComponent.h
+ * Date: 7-27-2020
+ * File: TextureManager.h
  **********************************************************************************************************************/
 #pragma once
+
 #include <vector>
 
-#include "OpenGLIncludes.h"
 #include "GraphicsComponent.h"
 
-#define SHADER_PATH "../../Assets/Shaders/"
+#define TEXTURE_PATH "../../Assets/Textures/"
 
-class ShaderManager
+class TextureManager
 {
 public:
-  ShaderManager();
-  ~ShaderManager();
+  TextureManager();
+  ~TextureManager();
 
   void Init();
 
-  GLuint GetShaderID(Shader::ShaderType index)
+  GLuint GetTextureID(Texture::TextureType index)
   {
-    return ShaderArray[static_cast<int>(index)].GetShaderLocation();
+    return TextureList[static_cast<int>(index)].GetTextureLocation();
   }
-private:
-  // Functions
-  void BuildShader(Shader& shader);
 
-  // Variables
-  std::vector<Shader> ShaderArray;
+private:
+  void BuildTexture(Texture& texture);
+
+  std::vector<Texture> TextureList;
 };

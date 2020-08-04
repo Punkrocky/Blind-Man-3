@@ -1,8 +1,8 @@
-/***********************************************************************************************************************
- * Project: Blind Man 3
- * Autor: Matthew LaDouceur
- * Date: 4-28-2020
- * File: Engine.cpp
+/*******************************************************************************************************************//**
+ * \file Engine.cpp
+ * \brief Blind Man 3
+ * \author Matthew LaDouceur
+ * \date 4-28-2020
  **********************************************************************************************************************/
 #include "Engine.h"
 #include "Random.h"
@@ -11,45 +11,64 @@
 
 static Random NumberGen(1000);
 
+
 Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
   bShuttingDown = false;
-  PtrGraphicsSys = new GraphicsSystem;
+  PtrGraphicsSys = new GraphicsSystem();
 
-  glm::vec2 TempPosition((-80.0f + DEFAULT_SCALE), (-80 + DEFAULT_SCALE));
+  // Temp variables to make entities
+  glm::vec2 TempPosition(0);
   glm::vec3 TempColor(1.0f);
 
-  int SizeI = ((2000 / DEFAULT_SCALE));
-  int SizeJ = ((2000 / DEFAULT_SCALE));
+  // Dimentions of the Tiled world
+  const int SizeI = 32;
+  const int SizeJ = 32;
+
+  EntitiesList.resize(SizeI * SizeJ);
 
   for (int i = 0; i < SizeI; ++i)
   {
-    //TempColor.g = 1.0f - (TempPosition.y / 720);
     for (int j = 0; j < SizeJ; ++j)
     {
-      //TempColor.r = 1.0f - (TempPosition.x / 1200);
-      TempColor.r = NumberGen.GenerateRandomFloat(1.0f);
-      TempColor.g = NumberGen.GenerateRandomFloat(1.0f);
-      TempColor.b = NumberGen.GenerateRandomFloat(1.0f);
-      PtrEntities.emplace_back(new Entity(TempPosition, TempColor));
-      TempPosition.x += (DEFAULT_SCALE*2);
+      // Generate a random color to multiply with the texture of the entity
+      TempColor.r = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
+      TempColor.g = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
+      TempColor.b = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
+
+      // Create a new Tile in the world
+      TransformComponent trans(TempPosition, glm::vec2(DEFAULT_SCALE, DEFAULT_SCALE));
+      GraphicsComponent graph(Texture::TextureType::Farm_t);
+      graph.SetGraphicsComponentColor(TempColor);
+      EntitiesList[i * SizeJ + j] = new Entity(trans, graph);
+
+      // Layer Tiles with a slope of 1/2 for a nice isometric view
+      TempPosition.x -= DEFAULT_SCALE;
+      TempPosition.y -= (DEFAULT_SCALE/2);
     }
-    TempPosition.x = (-80.0f + DEFAULT_SCALE);
-    TempPosition.y += (DEFAULT_SCALE*2);
+
+    // Reset the tiles to make the next row
+    TempPosition.x = DEFAULT_SCALE * i;
+    TempPosition.y = (-DEFAULT_SCALE / 2) * i;
   }
 }
+
 
 Engine::~Engine()
 {
   Shutdown();
 }
 
+
 void Engine::Init()
 {
+  // Empty because evrything can be done in the construtor
 }
+
 
 void Engine::Update(float dt)
 {
+  int count = 0;
   while (!bShuttingDown)
   {
     dt = GameTimer.EndFrame();
@@ -57,10 +76,10 @@ void Engine::Update(float dt)
     {
       continue;
     }
-    //std::cout << dt << "\n";
     GameTimer.StartFrame();
 
-    PtrGraphicsSys->Update(dt, PtrEntities);
+
+    PtrGraphicsSys->Update(dt, EntitiesList);
 
     if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()))
     {
@@ -69,11 +88,23 @@ void Engine::Update(float dt)
   }
 }
 
+
 void Engine::Shutdown()
 {
-  //PtrGraphicsSys->Shutdown();
+  //TODO [3]: Make a system manager.
+  //TODO [4]: Move the DestroySystem function to a system manager.
+  // Destroy Each system we created
   DestroySystem(PtrGraphicsSys);
+
+  //TODO [3]: Make an entity manager.
+  //TODO [4]: Move the DestroyEntity function to an entity manager.
+  // Destroy all the entities created
+  for (EntityPtr obj : EntitiesList)
+  {
+    DestroyEntity(obj);
+  }
 }
+
 
 bool Engine::IsShuttingDown()
 {

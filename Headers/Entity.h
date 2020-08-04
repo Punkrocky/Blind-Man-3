@@ -9,18 +9,18 @@
 #include "GraphicsComponent.h"
 #include "TransformComponent.h"
 
-#include <typeinfo>
-
 class Entity
 {
 public:
   Entity();
-  Entity(glm::vec2 position, glm::vec3 color);
+  Entity(const TransformComponent& transform, const GraphicsComponent& graphics);
   friend void DestroyEntity(Entity* entity);
 
-  TransformComponentPtr GetTransformComponent();
-  GraphicsComponentPtr GetGraphicsComponent();
+  TransformComponentPtr GetTransformComponent() const;
+  GraphicsComponentPtr GetGraphicsComponent() const;
 
+  void SetTransformComponent(const TransformComponent& tranform);
+  void SetGraphicsComponent(const GraphicsComponent& graphics);
 
 private:
   ~Entity();

@@ -16,7 +16,6 @@ int main(void)
   float dt = 0.0f;
   // Create our window on the heap so we can guarantee its lifetime
   GameWindow* PtrWindow = new GameWindow();
-  std::cout << "Hello World!\n";
 
   // Check that we successfully created a window
   if (PtrWindow)

@@ -1,13 +1,15 @@
 #version 430
 
 in vec4 fColor;
-//in vec2 fTexture;
+in vec2 fTextureCoords;
 
 out vec4 FinalColor;
 
-//uniform sampler2D Texture;
+uniform sampler2D Texture;
 
 void main()
 {
-  FinalColor = fColor;
+  vec4 Result = texture(Texture, fTextureCoords).rgba;
+  Result.xyz *= fColor.xyz;
+  FinalColor = Result;
 }

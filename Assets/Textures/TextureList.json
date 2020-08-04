@@ -1,0 +1,18 @@
+{
+    "0": {
+        "Texture Type": 0,
+        "File Name": "000_Default.png"
+    },
+    "1": {
+        "Texture Type": 1,
+        "File Name": "001_Grass.png"
+    },
+    "2": {
+        "Texture Type": 2,
+        "File Name": "002_Tree.png"
+    },
+    "3": {
+        "Texture Type": 3,
+        "File Name": "003_Farm.png"
+    }
+}

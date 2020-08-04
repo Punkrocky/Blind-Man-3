@@ -29,7 +29,7 @@ public:
 private:
   GameWindow* PtrGameWindow;
   GraphicsSystem* PtrGraphicsSys;
-  std::vector<EntityPtr> PtrEntities;
+  std::vector<EntityPtr> EntitiesList;
   Timer GameTimer;
   bool bShuttingDown;
   float dt;

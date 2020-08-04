@@ -1,8 +1,8 @@
-/***********************************************************************************************************************
- * Project: Blind Man 3
- * Autor: Matthew LaDouceur
- * Date: 4-28-2020
- * File: GraphicsSystem.h
+/*******************************************************************************************************************//**
+ * \file GraphicsSystem.h
+ * \author Matthew LaDouceur
+ * \date 4-28-2020
+ * \brief Header for the Graphics System. 
  **********************************************************************************************************************/
 #pragma once
 
@@ -10,98 +10,67 @@
 
 #include "OpenGLIncludes.h"
 #include "GraphicsComponent.h"
+#include "TextureManager.h"
 #include "ShaderManager.h"
 #include "Camera.h"
 #include "Entity.h"
 
+/// System that contains all logic to update entities with graphics components
 class GraphicsSystem
 {
 public:
-  /**
-   * @brief Default constructor for the Graphics System
-   *
-   */
+
   GraphicsSystem();
-  /**
-   * @brief Explicit destructor for the graphics system to dissuade people from accidentaly makeing new Graphics systems
-   *
-   * @param system
-   *  Pointer the the graphics system that we are deconstructing
-   */
   friend void DestroySystem(GraphicsSystem* system);
 
-  /**
-   * @brief Update the graphics system
-   *
-   * @param dt  The delta time that has passed since the last frame
-   *
-   * @param entities  A vector of entity pointers that need to be drawn to the screen this frame
-   */
-  void Update(float dt, std::vector<EntityPtr> entities);
-
-  /**
-   * @brief Given a value we determine how the camera should move.
-   *
-   * @param Case
-   *  Value needed to determine the required action for the camera.
-   */
+  void Update(float dt, const std::vector<EntityPtr>& entities);
   static void MoveCamera(int n);
 
-
 private:
-  /**
-   * @brief Initalizer for the Graphics system and OpenGL
-   *
-   */
-  void Init();
-
-  /**
-   * @brief Shutsdown the Graphics system and delets any GPU memory and allocated variables
-   *
-   */
-  void Shutdown();
-
-  /**
-   * @brief Private destructor will make the class only dynamically allocatable.
-   *
-   */
-  ~GraphicsSystem();
-
-  /**
-   * @brief Attaches all neccessary information needed to draw a mesh to the Geometry VAO
-   *
-   * @param comp
-   *  A pointer to a graphics component which contains all the information needed to draw the entity
-   *
-   */
-  void VAOPrepare(GraphicsComponent* comp);
-  void VAOPrepare(std::vector<glm::vec3> positions, std::vector<glm::vec4> colors, std::vector<unsigned int> indicies);
-
-  /**
-   * @brief Adds the data from the given component to the graphics system for a batch render
-   *
-   * @param comp  The graphics component we are adding to the batch render pass
-   */
-  void BatchPrepare(GraphicsComponent* comp, glm::mat4 modleMatrix, int index);
-
+  /// Store data used to create a VAO for rendering
   struct RenderData
   {
-    GLuint PositionVBO;
-    GLuint ColorVBO;
-    GLuint TextureVBO;
-    GLuint VAO;
-    GLuint EBO;
+    GLuint PositionVBO; //!< Address to the vertex buffer for position data
+    GLuint ColorVBO;    //!< Address to the vertex buffer for color data
+    GLuint TextureVBO;  //!< Address to the bertex buffer for texture uv data
+    GLuint VAO;         //!< Address to the vertex array
+    GLuint EBO;         //!< Address to the element buffer
 
-    // GLuint TextureID;
-    // GLuint ShaderID;
+    GLuint TextureID;   //!< Address to the used texture
+    GLuint ShaderID;    //!< Address to the used shader program
   };
-  RenderData GeometryData;
 
-  GLFWwindow* Window;
-  ShaderManager ShManager;
-  static Camera Viewport;
+  /// Exparimental struct
+  struct VAOData
+  {
+    RenderData base;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec4> colors;
+    std::vector<glm::vec2> UVs;
+    std::vector<unsigned int> indices;
+  };
+  size_t EntityCount = 0;   //!< The number of entities in the last render
 
-  std::vector<glm::vec3> BatchPositions;
-  std::vector<glm::vec4> BatchColors;
-  std::vector<unsigned int> BatchIndices;
+  static Camera Viewport;   //!< Object that represents the window into the world
+  GLFWwindow* Window;       //!< Handle on the window we are rendering to
+  TextureManager TxManager; //!< Texture Manager
+  ShaderManager ShManager;  //!< Shader Manager
+  RenderData GeometryData;  //!< Collection of GPU memory address
+
+
+  std::vector<glm::vec3> BatchPositions;  //!< Hold all the world space position data for a render pass
+  std::vector<glm::vec4> BatchColors;     //!< Hold all the color data for a render pass
+  std::vector<glm::vec2> BatchTextureUVs; //!< Hold all the texture uv data for a render pass
+  std::vector<unsigned int> BatchIndices; //!< Hold all the indices into the above arrays of data
+
+
+  ~GraphicsSystem();
+  void Init();
+  void Shutdown();
+
+  void VAOPrepare(GraphicsComponent* comp);
+  void VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
+                  const std::vector<glm::vec2>& textureUV, const std::vector<unsigned int>& indicies);
+
+  void BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index);
 };

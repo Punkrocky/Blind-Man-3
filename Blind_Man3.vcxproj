@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{5460D8D3-4F8B-48E0-8712-97DA3AF24F32}</ProjectGuid>
     <RootNamespace>BlindMan3</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -146,10 +146,12 @@
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\Random.cpp" />
     <ClCompile Include="Source\ShaderManager.cpp" />
+    <ClCompile Include="Source\TextureManager.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\TransformComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Headers\BaseComponent.h" />
     <ClInclude Include="Headers\BaseSystem.h" />
     <ClInclude Include="Headers\Camera.h" />
     <ClInclude Include="Headers\Engine.h" />
@@ -160,7 +162,9 @@
     <ClInclude Include="Headers\OpenGLIncludes.h" />
     <ClInclude Include="Headers\GameWindow.h" />
     <ClInclude Include="Headers\Random.h" />
+    <ClInclude Include="Headers\Serializer.h" />
     <ClInclude Include="Headers\ShaderManager.h" />
+    <ClInclude Include="Headers\TextureManager.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\TransformComponent.h" />
   </ItemGroup>

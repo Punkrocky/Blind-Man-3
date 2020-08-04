@@ -1,0 +1,7 @@
+{
+    "0": {
+        "Shader Type": 0,
+        "Vertex Shader": "BasicShader.vs",
+        "Fragment Shader": "BasicShader.fs"
+    }
+}
