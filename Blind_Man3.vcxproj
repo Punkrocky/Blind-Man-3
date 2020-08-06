@@ -144,6 +144,7 @@
     <ClCompile Include="Source\GraphicsComponent.cpp" />
     <ClCompile Include="Source\GraphicsSystem.cpp" />
     <ClCompile Include="Source\main.cpp" />
+    <ClCompile Include="Source\MeshManager.cpp" />
     <ClCompile Include="Source\Random.cpp" />
     <ClCompile Include="Source\ShaderManager.cpp" />
     <ClCompile Include="Source\TextureManager.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="Headers\GraphicsComponent.h" />
     <ClInclude Include="Headers\GraphicsSystem.h" />
     <ClInclude Include="Headers\Input.h" />
+    <ClInclude Include="Headers\MeshManager.h" />
     <ClInclude Include="Headers\OpenGLIncludes.h" />
     <ClInclude Include="Headers\GameWindow.h" />
     <ClInclude Include="Headers\Random.h" />

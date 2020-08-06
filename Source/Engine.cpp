@@ -37,7 +37,7 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
       TempColor.b = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
 
       // Create a new Tile in the world
-      TransformComponent trans(TempPosition, glm::vec2(DEFAULT_SCALE, DEFAULT_SCALE));
+      TransformComponent trans(TempPosition, DEFAULT_SCALE);
       GraphicsComponent graph(Texture::TextureType::Farm_t);
       graph.SetGraphicsComponentColor(TempColor);
       EntitiesList[i * SizeJ + j] = new Entity(trans, graph);

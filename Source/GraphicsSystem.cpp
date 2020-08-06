@@ -2,7 +2,7 @@
  * \file GraphicsSystem.cpp
  * \author Matthew LaDouceur
  * \date 4-28-2020
- * \brief Implimentation for the Graphics System
+ * \brief Source for the GraphicsSystem
  **********************************************************************************************************************/
 #include <iostream>
 #include <string>
@@ -340,19 +340,19 @@ void GraphicsSystem::Shutdown()
  */
 void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
 {
-  Mesh* mesh = comp->GetMesh();
+  Mesh mesh = MsManager.GetMeshObject();
 
   glBindVertexArray(GeometryData.VAO);
 
   // Build a buffer for the position data for the VAO
   glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec3), &mesh->GetVertexPositions()[0], GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec3), &mesh.GetVertexPositions()[0], GL_DYNAMIC_DRAW);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
   // Build a buffer for the Color data for the VAO
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
-  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec4), &mesh->GetVertexColors()[0], GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO); //TODO [5]: Create a full, 6 vertex array for the colors
+  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec4), &comp->GetColor()[0], GL_DYNAMIC_DRAW);
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
@@ -361,7 +361,7 @@ void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDEX_COUNT * sizeof(unsigned int), &mesh->GetIndices()[0], GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDEX_COUNT * sizeof(unsigned int), &mesh.GetIndices()[0], GL_DYNAMIC_DRAW);
 
   glBindVertexArray(0);
 }
@@ -413,10 +413,10 @@ void GraphicsSystem::VAOPrepare(const std::vector<glm::vec3>& positions, const s
  */
 void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index)
 {
-  Mesh* ComponentMesh = comp->GetMesh();
+  Mesh ComponentMesh = MsManager.GetMeshObject();
 
   // Calculate the world positon
-  glm::mat4 PositionComposit = modleMatrix * ComponentMesh->GetVertexPositions();
+  glm::mat4 PositionComposit = modleMatrix * ComponentMesh.GetVertexPositions();
   // Store the world positon data
   for (int i = 0; i < VERTEX_COUNT; ++i)
   {
@@ -428,12 +428,12 @@ void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, const glm::mat4& modl
   {
     int BatchIndex = index * VERTEX_COUNT + i;
 
-    BatchColors[BatchIndex] = ComponentMesh->GetVertexColors()[i];
-    BatchTextureUVs[BatchIndex] = ComponentMesh->GetVertexTextureCoords()[i];
+    BatchColors[BatchIndex] = comp->GetColor();
+    BatchTextureUVs[BatchIndex] = ComponentMesh.GetVertexTextureCoords()[i];
   }
 
   // Get the generic index values
-  std::vector<unsigned int> tempind = ComponentMesh->GetIndices();
+  std::vector<unsigned int> tempind = ComponentMesh.GetIndices();
   // Store the new indices into the composit mesh data vectors
   for (int i = 0; i < INDEX_COUNT; ++i)
   {

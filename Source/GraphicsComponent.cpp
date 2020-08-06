@@ -2,7 +2,7 @@
  * \file GraphicsComponent.cpp
  * \author Matthew LaDouceur
  * \date 4-28-2020
- * \brief Blind Man 3
+ * \brief Source for Mesh, Texture, Shader, and GraphicsComponent
  **********************************************************************************************************************/
 #include "GraphicsComponent.h"
 
@@ -15,12 +15,6 @@ Mesh::Mesh()
   VertexPositions[1] = glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f); // Bottom Right
   VertexPositions[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
   VertexPositions[3] = glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f); // Top Left
-
-  // Color Data
-  for (int i = 0; i < VERTEX_COUNT; ++i)
-  {
-    VertexColors[i] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
-  }
 
   // Texture Data
   VertexTextureCoords[0] = glm::vec2(1.0f, 0.0f); // Bottom Right
@@ -43,24 +37,15 @@ Mesh::Mesh()
 Mesh::Mesh(const Mesh& rhs)
 {
   this->VertexPositions = rhs.VertexPositions;
-  this->VertexColors = rhs.VertexColors;
   this->VertexTextureCoords = rhs.VertexTextureCoords;
   this->Indices = rhs.Indices;
 }
 
 
-Mesh::~Mesh() {}
-
 
 glm::mat4& Mesh::GetVertexPositions()
 {
   return VertexPositions;
-}
-
-
-glm::mat4& Mesh::GetVertexColors()
-{
-  return VertexColors;
 }
 
 
@@ -75,23 +60,12 @@ std::vector<unsigned int>& Mesh::GetIndices()
   return Indices;
 }
 
-
-void Mesh::SetVertexColors(const glm::vec3& color)
-{
-  for (int i = 0; i < VERTEX_COUNT; ++i)
-  {
-    VertexColors[i] = glm::vec4(color, 1.0f);
-  }
-}
-
 #pragma endregion
 
 #pragma region Texture
 
 Texture::Texture(std::string fileName) : FileName(fileName) {}
 
-
-Texture::~Texture() {}
 
 
 std::string Texture::GetFileName() const
@@ -134,9 +108,6 @@ void Texture::Load(pt::ptree node)
 #pragma region Shader
 
 Shader::Shader(std::string vertexFile, std::string fragmentFile) : VertexFile(vertexFile), FragmentFile(fragmentFile) {}
-
-
-Shader::~Shader() {}
 
 
 GLuint Shader::GetShaderLocation() const
@@ -188,7 +159,6 @@ void Shader::Load(pt::ptree node)
 
 GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, Shader::ShaderType typeShader)
 {
-  mesh = new Mesh;
   textureType = typeTexture;
   shaderType = typeShader;
 }
@@ -196,21 +166,9 @@ GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, Shader::S
 
 GraphicsComponent::GraphicsComponent(const GraphicsComponent& rhs)
 {
-  this->mesh = new Mesh(*rhs.mesh);
+  this->Color = rhs.Color;
   this->textureType = rhs.textureType;
   this->shaderType = rhs.shaderType;
-}
-
-
-GraphicsComponent::~GraphicsComponent()
-{
-  delete mesh;
-}
-
-
-Mesh* GraphicsComponent::GetMesh()
-{
-  return mesh;
 }
 
 
@@ -226,9 +184,15 @@ Shader::ShaderType GraphicsComponent::GetShaderType()
 }
 
 
+glm::vec4 GraphicsComponent::GetColor()
+{
+  return Color;
+}
+
+
 void GraphicsComponent::SetGraphicsComponentColor(glm::vec3 color)
 {
-  mesh->SetVertexColors(color);
+  Color = glm::vec4(color, 1.0f);
 }
 
 #pragma endregion

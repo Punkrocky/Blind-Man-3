@@ -2,10 +2,9 @@
 * \file Serializer.h
 * \author Matthew LaDouceur
 * \date 7-28-2020
-* \brief
+* \brief Header for Serializer
  **********************************************************************************************************************/
 #pragma once
-
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>

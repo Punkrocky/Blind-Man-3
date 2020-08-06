@@ -2,7 +2,7 @@
  * \file GraphicsSystem.h
  * \author Matthew LaDouceur
  * \date 4-28-2020
- * \brief Header for the Graphics System. 
+ * \brief Header for the GraphicsSystem. 
  **********************************************************************************************************************/
 #pragma once
 
@@ -12,6 +12,7 @@
 #include "GraphicsComponent.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include "MeshManager.h"
 #include "Camera.h"
 #include "Entity.h"
 
@@ -49,20 +50,23 @@ private:
     std::vector<glm::vec2> UVs;
     std::vector<unsigned int> indices;
   };
-  size_t EntityCount = 0;   //!< The number of entities in the last render
 
+
+  size_t EntityCount = 0;   //!< The number of entities in the last render
   static Camera Viewport;   //!< Object that represents the window into the world
   GLFWwindow* Window;       //!< Handle on the window we are rendering to
-  TextureManager TxManager; //!< Texture Manager
-  ShaderManager ShManager;  //!< Shader Manager
   RenderData GeometryData;  //!< Collection of GPU memory address
 
+  TextureManager TxManager; //!< Texture Manager
+  ShaderManager ShManager;  //!< Shader Manager
+  MeshManager MsManager;    //!< Mesh Manager
 
   std::vector<glm::vec3> BatchPositions;  //!< Hold all the world space position data for a render pass
   std::vector<glm::vec4> BatchColors;     //!< Hold all the color data for a render pass
   std::vector<glm::vec2> BatchTextureUVs; //!< Hold all the texture uv data for a render pass
   std::vector<unsigned int> BatchIndices; //!< Hold all the indices into the above arrays of data
 
+  //std::vector<GraphicsComponent> GraphicsCompnents;
 
   ~GraphicsSystem();
   void Init();

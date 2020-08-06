@@ -2,10 +2,9 @@
  * \file GraphicsComponent.h
  * \author Matthew LaDouceur
  * \date 4-28-2020
- * \brief Blind Man 3
+ * \brief Header for Mesh, Texture, Shader, and GraphicsComponent
  **********************************************************************************************************************/
 #pragma once
-
 #include <vector>
 
 #include "OpenGLIncludes.h"
@@ -17,31 +16,29 @@
 #define TEXTURE_PATH "../../Assets/Textures/"
 #define SHADER_PATH "../../Assets/Shaders/"
 
-// TODO [2]: Create a mesh manager
+/// Data related to mesh objects
 class Mesh
 {
 public:
   Mesh();
   Mesh(const Mesh& rhs);
-  ~Mesh();
+  ~Mesh() = default;
 
   glm::mat4& GetVertexPositions();
-  glm::mat4& GetVertexColors();
   glm::mat4x2& GetVertexTextureCoords();
   std::vector<unsigned int>& GetIndices();
 
-  void SetVertexColors(const glm::vec3& color);
-
 private:
-  glm::mat4 VertexPositions;         // XYZW
-  glm::mat4 VertexColors;            // RGBA
-  glm::mat4x2 VertexTextureCoords;   // UV
-  std::vector<unsigned int> Indices; // Index into the above data
+  glm::mat4 VertexPositions;         //!< XYZW. Each column of the matrix is a vertex of data
+  glm::mat4x2 VertexTextureCoords;   //!< UV. Each column of the matrix is a vertex of data
+  std::vector<unsigned int> Indices; //!< Index into the above data
 };
 
+/// Data related to a texture
 class Texture
 {
 public:
+  /// Used to comunicate with the TextureManager
   enum class TextureType
   {
     INVALID_TEXTURE_TYPE = -1,
@@ -53,7 +50,7 @@ public:
   };
 
   Texture(std::string fileName = TEXTURE_PATH"000_Default.png");
-  ~Texture();
+  ~Texture() = default;
 
   std::string GetFileName() const;
   GLuint GetTextureLocation() const;
@@ -65,14 +62,16 @@ public:
   
 
 private:
-  std::string FileName;   // Relative location of the texture
-  GLuint TextureLocation; // GPU memory address of the texture
-  TextureType Type;       // The type of texture
+  std::string FileName;   //!< Relative location of the texture
+  GLuint TextureLocation; //!< GPU memory address of the texture
+  TextureType Type;       //!< The type of texture
 };
 
+/// Data related to a shader program
 class Shader
 {
 public:
+  /// Used to communicate with the ShaderManager
   enum class ShaderType
   {
     INVALID_SHADER_TYPE = -1,
@@ -81,7 +80,7 @@ public:
   };
 
   Shader(std::string vertexFile = SHADER_PATH"BasicShader.vs", std::string fragmentFile = SHADER_PATH"BasicShader.fs");
-  ~Shader();
+  ~Shader() = default;
 
   GLuint GetShaderLocation() const;
   std::string GetVertexFile() const;
@@ -94,32 +93,33 @@ public:
 
 
 private:
-  std::string VertexFile;   // Relative location of the vertex shader
-  std::string FragmentFile; // Relative location of the fragment shader
-  GLuint ShaderLocation;    // GPU memory address of the shader program
-  ShaderType Type;          // The type of shader program
+  std::string VertexFile;   //!< Relative location of the vertex shader
+  std::string FragmentFile; //!< Relative location of the fragment shader
+  GLuint ShaderLocation;    //!< GPU memory address of the shader program
+  ShaderType Type;          //!< The type of shader program
 };
 
+/// Holds refrence data for Texture, Shader, and the colors of an attached entity
 class GraphicsComponent
 {
 public:
   GraphicsComponent(Texture::TextureType typeTexture = Texture::TextureType::Default_t, 
                     Shader::ShaderType typeShader = Shader::ShaderType::Basic_s);
   GraphicsComponent(const GraphicsComponent& rhs);
-  ~GraphicsComponent();
+  ~GraphicsComponent() = default;
 
   // Getters
-  Mesh* GetMesh();
   Texture::TextureType GetTextureType();
   Shader::ShaderType GetShaderType();
+  glm::vec4 GetColor();
 
   // Setters
   void SetGraphicsComponentColor(glm::vec3 color);
 
 private:
-  Mesh* mesh;
-  Texture::TextureType textureType;
-  Shader::ShaderType shaderType;
+  glm::vec4 Color;                  //!< A multiplicative color to be applied on top of the attached texture
+  Texture::TextureType textureType; //!< A refrence to the attached Texture
+  Shader::ShaderType shaderType;    //!< A refrence to the attached Shader
 };
 
 typedef GraphicsComponent* GraphicsComponentPtr;

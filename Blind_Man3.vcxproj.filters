@@ -51,6 +51,9 @@
     <ClCompile Include="Source\TextureManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\MeshManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\GraphicsSystem.h">
@@ -99,6 +102,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Headers\BaseComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\MeshManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,7 +2,7 @@
  * \file TransformComponent.h
  * \author Matthew LaDouceur
  * \date 5-30-2020
- * \brief
+ * \brief Header for TransformComponent
  **********************************************************************************************************************/
 #pragma once
 
@@ -10,30 +10,27 @@
 
 #define DEFAULT_SCALE 40.0f
 
+/// Holds data related to how an entity should be orientated in the world
 class TransformComponent
 {
 public:
   TransformComponent();
-  TransformComponent(glm::vec2 position, glm::vec2 scale, float angle = 0.0f);
+  TransformComponent(glm::vec2 position, float scale, float angle = 0.0f);
   TransformComponent(const TransformComponent& rhs);
-  ~TransformComponent();
+  ~TransformComponent() = default;
 
-  void SetPosition(glm::vec3 position);
-  void SetPosition(float x, float y, float z = 0.0f);
-
-  void SetScale(glm::vec2 scale);
-  void SetScale(float x, float y);
-
+  void SetPosition(glm::vec2 position);
+  void SetPosition(float x, float y);
+  void SetScale(float scale);
   void SetAngle(float degrees);
 
   glm::mat4 GetModelMatrix();
-
 private:
-  glm::vec3 Positon;
-  glm::vec2 Scale;
-  float Angle;
-  bool bDirty;
-  glm::mat4 ModelMatrix;
+  bool bDirty;           //!< True if we need to recalculate the ModleMatrix
+  float Scale;           //!< Uniform value to scale our mesh by in world value
+  float Angle;           //!< Degrees the mesh is rotated by
+  glm::vec2 Positon;     //!< World position of the mesh
+  glm::mat4 ModelMatrix; //!< Composition of the above data into a modle to world transform matrix
 };
 
 typedef TransformComponent* TransformComponentPtr;
