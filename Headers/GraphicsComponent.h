@@ -31,7 +31,7 @@ public:
 private:
   glm::mat4 VertexPositions;         //!< XYZW. Each column of the matrix is a vertex of data
   glm::mat4x2 VertexTextureCoords;   //!< UV. Each column of the matrix is a vertex of data
-  std::vector<unsigned int> Indices; //!< Index into the above data
+  std::vector<unsigned int> Indices; //!< Index into the above vertices
 };
 
 /// Data related to a texture
@@ -103,8 +103,8 @@ private:
 class GraphicsComponent
 {
 public:
-  GraphicsComponent(Texture::TextureType typeTexture = Texture::TextureType::Default_t, 
-                    Shader::ShaderType typeShader = Shader::ShaderType::Basic_s);
+  GraphicsComponent(Texture::TextureType typeTexture = Texture::TextureType::Default_t,
+                    float textureIndex = 0.0f, Shader::ShaderType typeShader = Shader::ShaderType::Basic_s);
   GraphicsComponent(const GraphicsComponent& rhs);
   ~GraphicsComponent() = default;
 
@@ -112,12 +112,14 @@ public:
   Texture::TextureType GetTextureType();
   Shader::ShaderType GetShaderType();
   glm::vec4 GetColor();
+  float GetTextureIndex();
 
   // Setters
   void SetGraphicsComponentColor(glm::vec3 color);
 
 private:
   glm::vec4 Color;                  //!< A multiplicative color to be applied on top of the attached texture
+  float TexuteIntex;                //!< An index related to the TextureType for batch rendering
   Texture::TextureType textureType; //!< A refrence to the attached Texture
   Shader::ShaderType shaderType;    //!< A refrence to the attached Shader
 };

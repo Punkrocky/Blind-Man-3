@@ -136,10 +136,13 @@ void GraphicsSystem::Update(float dt, const std::vector<EntityPtr>& entities)
   if (Size != EntityCount)
   {
     EntityCount = Size;
+    size_t ResizeSize = EntityCount * VERTEX_COUNT;
 
-    BatchPositions.resize(EntityCount * VERTEX_COUNT);
-    BatchColors.resize(EntityCount * VERTEX_COUNT);
-    BatchTextureUVs.resize(EntityCount * VERTEX_COUNT);
+    BatchPositions.resize(ResizeSize);
+    BatchColors.resize(ResizeSize);
+    BatchTextureUVs.resize(ResizeSize);
+    BatchTextureIndices.resize(ResizeSize);
+
     BatchIndices.resize(EntityCount * INDEX_COUNT);
 
 
@@ -148,7 +151,7 @@ void GraphicsSystem::Update(float dt, const std::vector<EntityPtr>& entities)
       BatchPrepare(entities[i]->GetGraphicsComponent(), entities[i]->GetTransformComponent()->GetModelMatrix(), i);
     }
 
-    VAOPrepare(BatchPositions, BatchColors, BatchTextureUVs, BatchIndices);
+    VAOPrepare(BatchPositions, BatchColors, BatchTextureUVs, BatchTextureIndices, BatchIndices);
   }
 
   GLuint ProgramID = ShManager.GetShaderID(entities[0]->GetGraphicsComponent()->GetShaderType());
@@ -156,13 +159,17 @@ void GraphicsSystem::Update(float dt, const std::vector<EntityPtr>& entities)
   // Tell OpenGL the shader we are using
   glUseProgram(ProgramID);
 
+  
+
+  glBindTextureUnit(0, TxManager.GetTextureID(Texture::TextureType::Default_t));
+  glBindTextureUnit(1, TxManager.GetTextureID(Texture::TextureType::Grass_t));
+  glBindTextureUnit(2, TxManager.GetTextureID(Texture::TextureType::Tree_t));
+  glBindTextureUnit(3, TxManager.GetTextureID(Texture::TextureType::Farm_t));
+
   // Get the View matrix
   glm::mat4 Matrix = Viewport.GetViewMatrix();
   // Send the matrix combination to the shader
   glUniformMatrix4fv(glGetUniformLocation(ProgramID, "MVP"), 1, GL_FALSE, &Matrix[0][0]);
-
-
-  glBindTexture(GL_TEXTURE_2D, TxManager.GetTextureID(entities[0]->GetGraphicsComponent()->GetTextureType()));
 
   // Bind the Vertex array for the current entity
   glBindVertexArray(GeometryData.VAO);
@@ -304,10 +311,18 @@ void GraphicsSystem::Init()
   ShManager.Init();
   TxManager.Init();
 
+  GeometryData.ShaderID = ShManager.GetShaderID(Shader::ShaderType::Basic_s);
+
+  glUseProgram(GeometryData.ShaderID);
+  int samplers[4] = { 0, 1, 2, 3 };
+  glUniform1iv(glGetUniformLocation(GeometryData.ShaderID, "Texture"), 4, samplers);
+  glUseProgram(0);
+
   glGenVertexArrays(1, &GeometryData.VAO);
   glGenBuffers(1, &GeometryData.PositionVBO);
   glGenBuffers(1, &GeometryData.ColorVBO);
   glGenBuffers(1, &GeometryData.TextureVBO);
+  glGenBuffers(1, &GeometryData.TextureIndexVBO);
   glGenBuffers(1, &GeometryData.EBO);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -323,6 +338,7 @@ void GraphicsSystem::Shutdown()
   glDeleteBuffers(1, &GeometryData.PositionVBO);
   glDeleteBuffers(1, &GeometryData.ColorVBO);
   glDeleteBuffers(1, &GeometryData.TextureVBO);
+  glDeleteBuffers(1, &GeometryData.TextureIndexVBO);
   glDeleteBuffers(1, &GeometryData.EBO);
   glDeleteVertexArrays(1, &GeometryData.VAO);
 
@@ -375,7 +391,8 @@ void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
  *
  */
 void GraphicsSystem::VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
-                                const std::vector<glm::vec2>& textureUV, const std::vector<unsigned int>& indicies)
+                                const std::vector<glm::vec2>& textureUV, const std::vector<float>& textureIndeices,
+                                const std::vector<unsigned int>& indicies)
 {
   glBindVertexArray(GeometryData.VAO);
 
@@ -395,6 +412,11 @@ void GraphicsSystem::VAOPrepare(const std::vector<glm::vec3>& positions, const s
   glBufferData(GL_ARRAY_BUFFER, textureUV.size() * sizeof(glm::vec2), &textureUV[0], GL_DYNAMIC_DRAW);
   glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.TextureIndexVBO);
+  glBufferData(GL_ARRAY_BUFFER, textureIndeices.size() * sizeof(float), &textureIndeices[0], GL_DYNAMIC_DRAW);
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -429,6 +451,7 @@ void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, const glm::mat4& modl
     int BatchIndex = index * VERTEX_COUNT + i;
 
     BatchColors[BatchIndex] = comp->GetColor();
+    BatchTextureIndices[BatchIndex] = comp->GetTextureIndex();
     BatchTextureUVs[BatchIndex] = ComponentMesh.GetVertexTextureCoords()[i];
   }
 

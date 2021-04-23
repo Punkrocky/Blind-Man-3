@@ -22,6 +22,7 @@ Mesh::Mesh()
   VertexTextureCoords[2] = glm::vec2(0.0f, 1.0f); // Top Left
   VertexTextureCoords[3] = glm::vec2(0.0f, 0.0f); // Bottom Left
 
+  // Vertex Intex
   Indices.resize(INDEX_COUNT);
   // Triangle 1
   Indices[0] = 0;
@@ -157,16 +158,18 @@ void Shader::Load(pt::ptree node)
 
 #pragma region GraphicsComponent
 
-GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, Shader::ShaderType typeShader)
+GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, float textureIndex, Shader::ShaderType typeShader)
 {
   textureType = typeTexture;
   shaderType = typeShader;
+  TexuteIntex = textureIndex;
 }
 
 
 GraphicsComponent::GraphicsComponent(const GraphicsComponent& rhs)
 {
   this->Color = rhs.Color;
+  this->TexuteIntex = rhs.TexuteIntex;
   this->textureType = rhs.textureType;
   this->shaderType = rhs.shaderType;
 }
@@ -187,6 +190,12 @@ Shader::ShaderType GraphicsComponent::GetShaderType()
 glm::vec4 GraphicsComponent::GetColor()
 {
   return Color;
+}
+
+
+float GraphicsComponent::GetTextureIndex()
+{
+  return TexuteIntex;
 }
 
 

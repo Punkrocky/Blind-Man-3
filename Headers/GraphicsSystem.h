@@ -31,24 +31,27 @@ private:
   /// Store data used to create a VAO for rendering
   struct RenderData
   {
-    GLuint PositionVBO; //!< Address to the vertex buffer for position data
-    GLuint ColorVBO;    //!< Address to the vertex buffer for color data
-    GLuint TextureVBO;  //!< Address to the bertex buffer for texture uv data
-    GLuint VAO;         //!< Address to the vertex array
-    GLuint EBO;         //!< Address to the element buffer
+    GLuint PositionVBO;     //!< Address to the vertex buffer for position data
+    GLuint ColorVBO;        //!< Address to the vertex buffer for color data
+    GLuint TextureVBO;      //!< Address to the vertex buffer for texture uv data
+    GLuint TextureIndexVBO; //!< Address to the vetex buffer for texture index data
 
-    GLuint TextureID;   //!< Address to the used texture
-    GLuint ShaderID;    //!< Address to the used shader program
+    GLuint VAO;             //!< Address to the vertex array
+    GLuint EBO;             //!< Address to the element buffer
+
+    GLuint TextureID;       //!< Address to the used texture
+    GLuint ShaderID;        //!< Address to the used shader program
   };
 
   /// Exparimental struct
   struct VAOData
   {
     RenderData base;
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec4> colors;
+    std::vector<glm::vec3> Positions;
+    std::vector<glm::vec4> Colors;
     std::vector<glm::vec2> UVs;
-    std::vector<unsigned int> indices;
+    std::vector<unsigned int> TextureIndices;
+    std::vector<unsigned int> Indices;
   };
 
 
@@ -61,10 +64,11 @@ private:
   ShaderManager ShManager;  //!< Shader Manager
   MeshManager MsManager;    //!< Mesh Manager
 
-  std::vector<glm::vec3> BatchPositions;  //!< Hold all the world space position data for a render pass
-  std::vector<glm::vec4> BatchColors;     //!< Hold all the color data for a render pass
-  std::vector<glm::vec2> BatchTextureUVs; //!< Hold all the texture uv data for a render pass
-  std::vector<unsigned int> BatchIndices; //!< Hold all the indices into the above arrays of data
+  std::vector<glm::vec3> BatchPositions;       //!< Hold all the world space position data for a render pass
+  std::vector<glm::vec4> BatchColors;          //!< Hold all the color data for a render pass
+  std::vector<glm::vec2> BatchTextureUVs;      //!< Hold all the texture uv data for a render pass
+  std::vector<float> BatchTextureIndices;      //!< Hold all the texture index data for the render pass
+  std::vector<unsigned int> BatchIndices;      //!< Hold all the indices into the above arrays of data
 
   //std::vector<GraphicsComponent> GraphicsCompnents;
 
@@ -74,7 +78,8 @@ private:
 
   void VAOPrepare(GraphicsComponent* comp);
   void VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
-                  const std::vector<glm::vec2>& textureUV, const std::vector<unsigned int>& indicies);
+                  const std::vector<glm::vec2>& textureUV, const std::vector<float>& textureIndeices, 
+                  const std::vector<unsigned int>& indicies);
 
   void BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index);
 };
