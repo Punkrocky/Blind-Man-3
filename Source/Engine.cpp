@@ -16,15 +16,17 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
   bShuttingDown = false;
   PtrGraphicsSys = new GraphicsSystem();
+  dt = 0.0f;
 
   // Temp variables to make entities
-  glm::vec2 TempPosition(0);
+  glm::vec2 TempPosition(0.0f);
   glm::vec3 TempColor(1.0f);
 
   // Dimentions of the Tiled world
   const int SizeI = 32;
-  const int SizeJ = 32;
+  const int SizeJ = 64;
 
+  // Allocate enough space for all the needed tiles
   EntitiesList.resize(SizeI * SizeJ);
 
   for (int i = 0; i < SizeI; ++i)
@@ -43,13 +45,13 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
       EntitiesList[i * SizeJ + j] = new Entity(trans, graph);
 
       // Layer Tiles with a slope of 1/2 for a nice isometric view
-      TempPosition.x -= DEFAULT_SCALE;
-      TempPosition.y -= (DEFAULT_SCALE/2);
+      TempPosition.x += DEFAULT_SCALE*2;
+      //TempPosition.y = (DEFAULT_SCALE / 2) * i;
     }
 
     // Reset the tiles to make the next row
-    TempPosition.x = DEFAULT_SCALE * i;
-    TempPosition.y = (-DEFAULT_SCALE / 2) * i;
+    TempPosition.x = (-DEFAULT_SCALE) * ((i+1) % 2);
+    TempPosition.y -= DEFAULT_SCALE;
   }
 }
 

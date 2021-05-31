@@ -8,7 +8,7 @@
 
 #include "OpenGLIncludes.h"
 
-#define DEFAULT_SCALE 40.0f
+#define DEFAULT_SCALE 32.0f
 
 /// Holds data related to how an entity should be orientated in the world
 class TransformComponent
