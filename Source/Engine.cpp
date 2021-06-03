@@ -11,6 +11,23 @@
 
 static Random NumberGen(1000);
 
+glm::vec3 operator/(const glm::vec3& l, float r)
+{
+  glm::vec3 temp(l);
+  temp.x /= r;
+  temp.y /= r;
+  temp.z /= r;
+  return temp;
+}
+
+//glm::vec3 operator*(const glm::vec3& l, float r)
+//{
+//  glm::vec3 temp(l);
+//  temp.x *= r;
+//  temp.y *= r;
+//  temp.z *= r;
+//  return temp;
+//}
 
 Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
@@ -32,24 +49,28 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
     for (int j = 0; j < SizeJ; ++j)
     {
       // Generate a random color to multiply with the texture of the entity
-      TempColor.r = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
-      TempColor.g = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
-      TempColor.b = NumberGen.GenerateRandomFloat(1.0f, 0.75f);
+      /*TempColor.r = NumberGen.GenerateRandomFloat(1.0f, 0.70f);
+      TempColor.g = NumberGen.GenerateRandomFloat(1.0f, 0.70f);
+      TempColor.b = NumberGen.GenerateRandomFloat(1.0f, 0.70f);*/
+
+      // Don't alter the color of the texture at all
+      TempColor.r = 1.0f;
+      TempColor.g = 1.0f;
+      TempColor.b = 1.0f;
 
       // Create a new Tile in the world
       TransformComponent trans(TempPosition, DEFAULT_SCALE);
-      GraphicsComponent graph(Texture::TextureType::Farm_t);
-      graph.SetGraphicsComponentColor(TempColor);
+      GraphicsComponent graph(Texture::TextureType::White_t);
+      float f = ((static_cast<float>(i) * j) / (static_cast<float>(SizeI) * SizeJ));
+      graph.SetGraphicsComponentColor(TempColor * glm::vec3(f));
       EntitiesList[i * SizeJ + j] = new Entity(trans, graph);
 
-      // Layer Tiles with a slope of 1/2 for a nice isometric view
-      TempPosition.x -= DEFAULT_SCALE;
-      TempPosition.y -= (DEFAULT_SCALE/2);
+      TempPosition.x += DEFAULT_SCALE * 2;
     }
 
     // Reset the tiles to make the next row
-    TempPosition.x = DEFAULT_SCALE * i;
-    TempPosition.y = (-DEFAULT_SCALE / 2) * i;
+    TempPosition.x = 0;
+    TempPosition.y += DEFAULT_SCALE * 2;
   }
 }
 

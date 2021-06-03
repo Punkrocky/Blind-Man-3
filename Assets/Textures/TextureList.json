@@ -14,5 +14,9 @@
     "3": {
         "Texture Type": 3,
         "File Name": "003_Farm.png"
+    },
+    "4": {
+        "Texture Type": 4,
+        "File Name": "004_White.png"
     }
 }

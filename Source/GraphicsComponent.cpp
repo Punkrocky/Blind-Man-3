@@ -159,6 +159,7 @@ void Shader::Load(pt::ptree node)
 
 GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, Shader::ShaderType typeShader)
 {
+  TextureIndex = static_cast<float>(typeTexture);
   textureType = typeTexture;
   shaderType = typeShader;
 }
@@ -167,6 +168,7 @@ GraphicsComponent::GraphicsComponent(Texture::TextureType typeTexture, Shader::S
 GraphicsComponent::GraphicsComponent(const GraphicsComponent& rhs)
 {
   this->Color = rhs.Color;
+  this->TextureIndex = rhs.TextureIndex;
   this->textureType = rhs.textureType;
   this->shaderType = rhs.shaderType;
 }
@@ -181,6 +183,12 @@ Texture::TextureType GraphicsComponent::GetTextureType()
 Shader::ShaderType GraphicsComponent::GetShaderType()
 {
   return shaderType;
+}
+
+
+float GraphicsComponent::GetTextureIndex()
+{
+  return TextureIndex;
 }
 
 

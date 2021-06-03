@@ -46,6 +46,7 @@ public:
     Grass_t,
     Tree_t,
     Farm_t,
+    White_t,
     TEXTURE_TYPE_TOTAL
   };
 
@@ -111,6 +112,7 @@ public:
   // Getters
   Texture::TextureType GetTextureType();
   Shader::ShaderType GetShaderType();
+  float GetTextureIndex();
   glm::vec4 GetColor();
 
   // Setters
@@ -118,6 +120,7 @@ public:
 
 private:
   glm::vec4 Color;                  //!< A multiplicative color to be applied on top of the attached texture
+  float TextureIndex;               //!< An index to the array of textures sent to the GPU
   Texture::TextureType textureType; //!< A refrence to the attached Texture
   Shader::ShaderType shaderType;    //!< A refrence to the attached Shader
 };
