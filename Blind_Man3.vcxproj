@@ -150,6 +150,7 @@
     <ClCompile Include="Source\TextureManager.cpp" />
     <ClCompile Include="Source\Timer.cpp" />
     <ClCompile Include="Source\TransformComponent.cpp" />
+    <ClCompile Include="Source\Walking.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\BaseComponent.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="Headers\TextureManager.h" />
     <ClInclude Include="Headers\Timer.h" />
     <ClInclude Include="Headers\TransformComponent.h" />
+    <ClInclude Include="Headers\Walking.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\BasicShader.fs" />

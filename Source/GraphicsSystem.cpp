@@ -299,6 +299,7 @@ void GraphicsSystem::Init()
 
   // Set the clear color to a nice blue-gray background color
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

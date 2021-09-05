@@ -6,6 +6,7 @@
  **********************************************************************************************************************/
 #include "Engine.h"
 #include "Random.h"
+#include "Walking.h"
 
 #include <iostream>
 
@@ -31,6 +32,13 @@ glm::vec3 operator/(const glm::vec3& l, float r)
 
 Engine::Engine(GameWindow* window) : PtrGameWindow(window)
 {
+  const int size = 125;
+  Blind::World M(size, 2);
+  M.MAPGenerateGenOrder();
+  //M.MAPGenerateIslandMap();
+  M.SaveMapImage("Test", size);
+  float MaxValue = M.GetLargestValue();
+
   bShuttingDown = false;
   PtrGraphicsSys = new GraphicsSystem();
 
@@ -39,8 +47,8 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
   glm::vec3 TempColor(1.0f);
 
   // Dimentions of the Tiled world
-  const int SizeI = 32;
-  const int SizeJ = 32;
+  const int SizeI = size;
+  const int SizeJ = size;
 
   EntitiesList.resize(SizeI * SizeJ);
 
@@ -54,15 +62,53 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window)
       TempColor.b = NumberGen.GenerateRandomFloat(1.0f, 0.70f);*/
 
       // Don't alter the color of the texture at all
-      TempColor.r = 1.0f;
-      TempColor.g = 1.0f;
-      TempColor.b = 1.0f;
+      float Fi = M.GetValue(i, j) / MaxValue;
+
+      /*const float n = 6.0f;
+      const float m = 1.0f;
+
+      float x1 = (tmpv - MaxValue);
+      float c1 = (((-x1 + m) * n) / (x1 * x1 + n)) / 2.0f;
+      float c2 = ((-tmpv - m) * n) / (tmpv * tmpv + n);
+
+      float h3 = c1 + c2 + 1.0f;*/
+
+      //float Fo = ((6 * Fi - 15) * Fi + 10) * Fi * Fi * Fi;
+
+      float Fo = ((((1 * Fi - 5) * Fi + 7)* Fi - 5)* Fi + 3)* Fi;
+
+      float R = 0.50f + Fo * (0.4);
+      float G = 0.10f + Fo * (0.2);
+      float B = 0.30f + Fo * (-0.1);
+
+      if (M.GetValue(i, j) == 0) // Any tile that was not touched is colored grey
+      {
+        R = 0.2f;
+        G = 0.3f;
+        B = 0.3f;
+      }
+      else if (M.GetValue(i, j) == 1) // Mark the starting tile as black
+      {
+        R = 0.1f;
+        G = 0.1f;
+        B = 0.1f;
+      }
+      else if (M.GetValue(i, j) == MaxValue) // Mark the ending tile as white
+      {
+        G = 0.9f;
+        B = 0.9f;
+        R = 0.9f;
+      }
+
+      TempColor.r = R;
+      TempColor.g = G;
+      TempColor.b = B;
 
       // Create a new Tile in the world
       TransformComponent trans(TempPosition, DEFAULT_SCALE);
       GraphicsComponent graph(Texture::TextureType::White_t);
-      float f = ((static_cast<float>(i) * j) / (static_cast<float>(SizeI) * SizeJ));
-      graph.SetGraphicsComponentColor(TempColor * glm::vec3(f));
+      //float f = ((static_cast<float>(i) * j) / (static_cast<float>(SizeI) * SizeJ));
+      graph.SetGraphicsComponentColor(TempColor);
       EntitiesList[i * SizeJ + j] = new Entity(trans, graph);
 
       TempPosition.x += DEFAULT_SCALE * 2;
