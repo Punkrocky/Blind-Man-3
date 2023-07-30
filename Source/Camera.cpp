@@ -10,13 +10,11 @@ Camera::Camera()
 {
   Position = glm::vec3(0, 0, -1);
   ViewMatrix = glm::mat4(1.0f);
+  Rotation = 0.0f;
   bDirty = true;
 }
 
-Camera::~Camera()
-{
-
-}
+Camera::~Camera() {}
 
 void Camera::SetPosition(glm::vec3 position)
 {
@@ -50,4 +48,10 @@ glm::mat4 Camera::GetViewMatrix()
   }
 
   return ViewMatrix;
+}
+
+std::ostream& operator<<(std::ostream& os, const Camera& obj)
+{
+  os << "Position: " << obj.Position;
+  return os;
 }

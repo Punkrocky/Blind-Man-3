@@ -9,13 +9,52 @@
 #include <string>
 
 #include "TextureManager.h"
-#include "Serializer.h"
+
+Texture::Texture(std::string fileName) : FileName(fileName) {}
+
+
+
+std::string Texture::GetFileName() const
+{
+  return FileName;
+}
+
+
+GLuint Texture::GetTextureLocation() const
+{
+  return TextureLocation;
+}
+
+
+void Texture::SetTextureLocation()
+{
+  glGenTextures(1, &TextureLocation);
+}
+
+pt::ptree Texture::Save() const
+{
+  pt::ptree node;
+
+  node.add("Texture Type", static_cast<int>(Type));
+  node.add("File Name", FileName);
+
+  return node;
+}
+
+
+void Texture::Load(pt::ptree node)
+{
+  Type = static_cast<TextureType>(node.get<int>("Texture Type"));
+  FileName = TEXTURE_PATH + node.get<std::string>("File Name");
+}
+
+
 
  /*!
   * \brief Reads a JSON file for texture names and builds them on the GPU
   *
   */
-void TextureManager::Init()
+TextureManager::TextureManager()
 {
   Serializer TextureSerial(TEXTURE_PATH"TextureList.json", Serializer::Mode::Read);
   Texture TempTexture;
@@ -36,11 +75,16 @@ void TextureManager::Init()
  *  The GPU memory address related to the texture
  *
  */
-GLuint TextureManager::GetTextureID(Texture::TextureType index)
+GLuint TextureManager::GetTextureID(Texture::TextureType index) const
 {
-  return TextureList[static_cast<int>(index)].GetTextureLocation();
+  return TextureArray[static_cast<int>(index)].GetTextureLocation();
 }
 
+
+Texture* TextureManager::GetTexturePtr(Texture::TextureType type)
+{
+  return &TextureArray[static_cast<int>(type)];
+}
 
 /**********************************************************************************************************************\
 |*************************************************| PRIVATE MEMBERS |**************************************************|
@@ -75,7 +119,7 @@ void TextureManager::BuildTexture(Texture& texture)
     // Free the texture data from the CPU
     stbi_image_free(TextureData);
 
-    TextureList.emplace_back(texture);
+    TextureArray.emplace_back(texture);
   }
 }
 

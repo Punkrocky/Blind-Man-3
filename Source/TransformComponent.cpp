@@ -11,14 +11,8 @@
  * \brief Default constructor
  *
  */
-TransformComponent::TransformComponent()
-{
-  Positon = glm::vec2(0.0f);
-  Scale = DEFAULT_SCALE;
-  Angle = 0.0f;
-  ModelMatrix = glm::mat4(1.0f);
-  bDirty = true;
-}
+TransformComponent::TransformComponent() : Positon(0.0f, 0.0f), Scale(DEFAULT_SCALE), isDirty(true)
+{}
 
 /*!
  * \brief Constructor
@@ -33,14 +27,8 @@ TransformComponent::TransformComponent()
  *  The rotation in degrees, defaults to 0
  *
  */
-TransformComponent::TransformComponent(glm::vec2 position, float scale, float angle)
-{
-  Positon = position;
-  Scale = scale;
-  Angle = angle;
-  ModelMatrix = glm::mat4(1.0f);
-  bDirty = true;
-}
+TransformComponent::TransformComponent(const glm::vec2& position, float scale, bool isdirty) : Positon(position), Scale(scale), isDirty(isdirty)
+{}
 
 /*!
  * \brief Copy constructor
@@ -53,9 +41,7 @@ TransformComponent::TransformComponent(const TransformComponent& rhs)
 {
   this->Positon = rhs.Positon;
   this->Scale = rhs.Scale;
-  this->Angle = rhs.Angle;
-  this->ModelMatrix = rhs.ModelMatrix;
-  this->bDirty = rhs.bDirty;
+  this->isDirty = rhs.isDirty;
 }
 
 
@@ -66,9 +52,9 @@ TransformComponent::TransformComponent(const TransformComponent& rhs)
  *  The new world position to use
  *
  */
-void TransformComponent::SetPosition(glm::vec2 position)
+void TransformComponent::SetPosition(const glm::vec2& position)
 {
-  Positon = position;
+  SetPosition(position.x, position.y);
 }
 
 
@@ -87,7 +73,8 @@ void TransformComponent::SetPosition(glm::vec2 position)
  */
 void TransformComponent::SetPosition(float x, float y)
 {
-  SetPosition(glm::vec2(x, y));
+  Positon.x = x;
+  Positon.y = y;
 }
 
 /*!
@@ -102,17 +89,6 @@ void TransformComponent::SetScale(float scale)
   Scale = scale;
 }
 
-/*!
- * \brief Set the world rotation of the attached entity
- *
- * \param degrees
- *  The new world rotation to use
- *
- */
-void TransformComponent::SetAngle(float degrees)
-{
-  Angle = degrees;
-}
 
 /*!
  * \brief Set the world position of the attached entity
@@ -121,17 +97,14 @@ void TransformComponent::SetAngle(float degrees)
  *  The modle to world transform matrix
  *
  */
-glm::mat4 TransformComponent::GetModelMatrix()
+glm::mat4 TransformComponent::GetModelMatrix() const
 {
-  // Recalculate the modle to world matrix if bDirty is true
-  if (bDirty)
-  {
-    glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(Positon, 0.0f));
-    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(Scale, Scale, 1.0f));
-    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), Angle, glm::vec3(0.0f, 0.0f, 1.0f));
+  glm::mat4 ModelMatrix(1.0f);
 
-    ModelMatrix = translate * rotate * scale;
-  }
+  ModelMatrix[3] = glm::vec4(Positon, 1.0f, 1.0f);
+  ModelMatrix[0][0] = Scale;
+  ModelMatrix[1][1] = Scale;
+
 
   return ModelMatrix;
 }

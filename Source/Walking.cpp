@@ -6,6 +6,7 @@
  **********************************************************************************************************************/
 
 #include "Walking.h"
+#include "Input.h"
 
 #include <STB/stb_image.h>
 #ifndef STBI_MSC_SECURE_CRT
@@ -16,19 +17,21 @@
 #endif // !STB_IMAGE_WRITE_IMPLEMENTATION
 #include <STB/stb_image_write.h>
 
-#define MAP_POS_INDEX TileMap[Position % Size][Position / Size]
+#define MAP_POS_INDEX TileMap[Position / Size][Position % Size]
 
 #define MOLE_CHECK_LEFT Position % Size == 0
-#define MOLE_CHECK_RIGHT Position % Size == Size - 1
+#define MOLE_CHECK_RIGHT Position % Size == (Size - 1)
 #define MOLE_CHECK_DOWN Position >= (Size * (Size - 1)) - 1
 #define MOLE_CHECK_UP Position < Size
+
 #define MOLE_MOVE_LEFT --Position
 #define MOLE_MOVE_RIGHT ++Position
 #define MOLE_MOVE_DOWN Position += Size
 #define MOLE_MOVE_UP Position -= Size
 
 
-Blind::World::World(int size, int moleCount) : Size(size)
+
+Blind::World::World(int size, int moleCount) : Size(size), WorldRNG(Random(1615134))
 {
   MoleArray.reserve(moleCount);
   for (int i = 0; i < moleCount; ++i)
@@ -50,7 +53,7 @@ Blind::World::~World()
 
 }
 
-int Blind::World::GetValue(int x, int y)
+int Blind::World::GetValue(int y, int x)
 {
   return this->TileMap[x][y];
 }
@@ -61,7 +64,7 @@ int Blind::World::GetValue(int position)
   return this->MAP_POS_INDEX;
 }
 
-void Blind::World::SetValue(int x, int y, int value)
+void Blind::World::SetValue(int y, int x, int value)
 {
   this->TileMap[x][y] = value;
 }
@@ -72,7 +75,81 @@ int Blind::World::GetLargestValue()
   return LargestValue;
 }
 
-void Blind::World::MAPGenerateGenOrder()
+glm::vec3 Blind::World::GetTileColor(int y, int x, PalletType type)
+{
+  glm::vec3 TempColor(0.0f);
+  // Border
+  if (x == 0 || y == 0 || x == (Size - 1) || y == (Size - 1))
+  {
+    return TempColor;
+  }
+
+  switch (type)
+  {
+  case Blind::World::YELLOW_PURPLE:
+  {
+    // Create a yellow purple gradient from high to low
+    float Fi = TileMap[x][y] / LargestValue;
+
+    float Fo = ((((1 * Fi - 5) * Fi + 7) * Fi - 5) * Fi + 3) * Fi;
+
+    float R = 0.50f + Fo * (0.4);
+    float G = 0.10f + Fo * (0.2);
+    float B = 0.30f + Fo * (-0.1);
+
+    TempColor.r = R;
+    TempColor.g = G;
+    TempColor.b = B;
+    break;
+  }
+  case Blind::World::ISLAND_TROPICAL:
+  {
+    int Fi = TileMap[x][y];
+    if (Fi == 0)                  // Deep Water
+    {
+      TempColor.r = 0.01f;
+      TempColor.g = 0.42f;
+      TempColor.b = 0.71f;
+    }
+    else if (Fi > 0 && Fi <= 5)   // Shallow Water
+    {
+      TempColor.r = 0.13f;
+      TempColor.g = 0.73f;
+      TempColor.b = 0.87f;
+    }
+    else if (Fi > 5 && Fi <= 8)   // Beach
+    {
+      TempColor.r = 0.92f;
+      TempColor.g = 0.80f;
+      TempColor.b = 0.50f;
+    }
+    else if (Fi > 8 && Fi <= 20)  // Grass
+    {
+      TempColor.r = 0.05f;
+      TempColor.g = 0.74f;
+      TempColor.b = 0.13f;
+    }
+    else if (Fi > 20 && Fi <= 60) // Mountain
+    {
+      TempColor.r = 0.75f;
+      TempColor.g = 0.75f;
+      TempColor.b = 0.75f;
+    }
+    else if (Fi > 60)             // Mountain Peaks
+    {
+      TempColor.r = 0.85f;
+      TempColor.g = 0.80f;
+      TempColor.b = 0.95f;
+    }
+    break;
+  }
+  default:
+    break;
+  }
+  return TempColor;
+}
+
+void Blind::World::GenerateInOrder()
 {
   int floortiles = 0; // Count the number of altered tiles to stop generation
   int attempts = 0;   // Count the total number of generation attempts to prevent livelock
@@ -100,7 +177,7 @@ void Blind::World::MAPGenerateGenOrder()
   LargestValue = floortiles;
 }
 
-void Blind::World::MAPGenerateIslandMap()
+void Blind::World::GenerateIslands()
 {
   int floortiles = 0; // Count the number of altered tiles to stop generation
   int attempts = 0;   // Count the total number of generation attempts to prevent livelock
@@ -115,10 +192,13 @@ void Blind::World::MAPGenerateIslandMap()
 
       // Increment the number of tiles that have been altered
       ++floortiles;
+
       // Increment the number of total generation attempts made
       ++attempts;
+
       // Increment the value of the tile at the new position
       MAP_POS_INDEX++;
+
       // Update the largest value on this map
       if (MAP_POS_INDEX > LargestValue)
       {
@@ -129,11 +209,87 @@ void Blind::World::MAPGenerateIslandMap()
 }
 
 /// <summary>
+/// Generate a series of rooms (small, medium, and large) with corridors connecting them.
+/// </summary>
+void Blind::World::GenerateDungeon()
+{
+  // number of small, medium, and large rooms to try generating
+  int s = 7, m = 5, l = 3;
+
+
+}
+
+/// <summary>
+/// 
+/// </summary>
+void Blind::World::Noise()
+{
+  //glm::vec2 GlobalVec = glm::vec2(WorldRNG.GenerateRandomFloat(1.0f, -1.0f), WorldRNG.GenerateRandomFloat(1.0f, -1.0f));
+
+  std::vector<glm::vec2> VertVector(2 * (Size + 1));
+  for (int i = 0; i < (Size + 1); ++i) // Generate the top row of vectors
+  {
+    VertVector[i] = glm::vec2(WorldRNG.GenerateRandomFloat(1.0f, -1.0f), WorldRNG.GenerateRandomFloat(1.0f, -1.0f));
+  }
+
+  for (int i = 0; i < Size; ++i)
+  {
+    for (int k = 0; k < (Size + 1); ++k) // Generate the next row of vectors
+    {
+      VertVector[k + (Size + 1)] = glm::vec2(WorldRNG.GenerateRandomFloat(1.0f, -1.0f), WorldRNG.GenerateRandomFloat(1.0f, -1.0f));
+    }
+    for (int j = 0; j < Size; ++j)
+    {
+      glm::vec2 InsidePos = glm::vec2(WorldRNG.GenerateRandomFloat(1.0f, -1.0f), WorldRNG.GenerateRandomFloat(1.0f, -1.0f));
+      glm::vec2 TL(-1.0f, 1.0f), TR(1.0f, 1.0f), BL(-1.0f, -1.0f), BR(1.0f, -1.0f);
+      TL = InsidePos - TL;
+      TR = InsidePos - TR;
+      BL = InsidePos - BL;
+      BR = InsidePos - BR;
+
+      TL = glm::normalize(TL);
+      TR = glm::normalize(TR);
+      BL = glm::normalize(BL);
+      BR = glm::normalize(BR);
+
+      float TLv = glm::dot(VertVector[j], TL);
+      float TRv = glm::dot(VertVector[j + 1], TR);
+      float BLv = glm::dot(VertVector[j + (Size + 1)], BL);
+      float BRv = glm::dot(VertVector[(j + 1) + (Size + 1)], BR);
+
+      float Fx = Fade((InsidePos.x + 1.0f) / 2.0f);
+      float Fy = Fade((InsidePos.y + 1.0f) / 2.0f);
+
+      /*Fx = (Fx + 1.0f) / 2.0f;
+      Fy = (Fy + 1.0f) / 2.0f;*/
+
+      float result = Lerp(Fx, Lerp(Fy, TLv, BLv), Lerp(Fy, TRv, BRv));
+      result = (result + 1.0f) / 2.0f;
+
+      if (result > LargestValue)
+      {
+        LargestValue = result;
+      }
+      TileMap[i][j] = result;
+    }
+    for (int l = 0; l < (Size + 1); ++l) // Copy the second row of values into the first row
+    {
+      VertVector[l] = VertVector[l + (Size + 1)];
+    }
+  }
+}
+
+/// <summary>
 /// Reset the entire map to 0's
 /// </summary>
 void Blind::World::CleanMap()
 {
-  std::memset(&TileMap[0], 0, Size * Size * sizeof(int));
+  //std::memset(&TileMap[0], 0, Size * Size * sizeof(int));
+
+  for (int i = 0; i < Size; ++i)
+  {
+    std::memset(&TileMap[i][0], 0, Size * sizeof(float));
+  }
 }
 
 void Blind::World::SmoothMAP()
@@ -247,6 +403,17 @@ void Blind::World::ReadMap(std::string name)
 }
 
 
+float Blind::World::Fade(float t)
+{
+  return ((((6 * t - 15) * t + 10) * t) * t) * t;
+}
+
+
+float Blind::World::Lerp(float t, float x, float y)
+{
+  return x + t * (y - x);
+}
+
 /// <summary>
 /// Constructor for a Mole class. All Moles start at the center of their map
 /// </summary>
@@ -254,9 +421,9 @@ void Blind::World::ReadMap(std::string name)
 /// <param name="size">Size of the map this Mole opperates on</param>
 Blind::Mole::Mole(int seed, int size) : Seed(seed), Size(size)
 {
-  //Seed = 1623503267; // Only for testing
+  //Seed = 1623503266; // Only for testing
   printf("%d\n", Seed);
-  Generator.seed(Seed);
+  RNG = Random(Seed);
 
   CenterPosition();
 }
@@ -268,7 +435,7 @@ Blind::Mole::Mole(int seed, int size) : Seed(seed), Size(size)
 /// <returns>Return the modified self</returns>
 Blind::Mole& Blind::Mole::operator=(const Mole& mole)
 {
-  Generator = mole.Generator;
+  RNG = mole.RNG;
   Position = mole.Position;
   Seed = mole.Seed;
   Size = mole.Size;
@@ -282,10 +449,9 @@ Blind::Mole& Blind::Mole::operator=(const Mole& mole)
 /// <param name="max">Largest value this function can return</param>
 /// <param name="min">Smallest value this function can return. Default value 0</param>
 /// <returns>A random number within the given range</returns>
-Blind::Mole::DIRECTION Blind::Mole::RandomInt(int max, int min)
+Blind::Mole::DIRECTION Blind::Mole::RandomDirection(int max, int min)
 {
-  std::uniform_int_distribution<int> Distribution(min, max);
-  return static_cast<DIRECTION>(Distribution(Generator));
+  return static_cast<DIRECTION>(RNG.GenerateRandomInt(max, min));
 }
 
 /// <summary>
@@ -301,7 +467,7 @@ void Blind::Mole::CenterPosition()
 /// </summary>
 void Blind::Mole::RandomPosition()
 {
-  Position = RandomInt((Size * Size) - 1);
+  Position = RandomDirection((Size * Size) - 1);
 }
 
 /// <summary>
@@ -311,7 +477,7 @@ void Blind::Mole::RandomPosition()
 int Blind::Mole::RandomDirection()
 {
   // Pick which direction the Mole will move
-  DIRECTION Direction = RandomInt(3);
+  DIRECTION Direction = RandomDirection(3);
   switch (Direction)
   {
   case UP:
@@ -347,13 +513,14 @@ int Blind::Mole::RandomDirection()
   {
     MOLE_MOVE_LEFT;
   }
+
+  if (MOLE_CHECK_UP)
+  {
+    MOLE_MOVE_DOWN;
+  }
   else if (MOLE_CHECK_DOWN)
   {
     MOLE_MOVE_UP;
-  }
-  else if (MOLE_CHECK_UP)
-  {
-    MOLE_MOVE_DOWN;
   }
 
   return Position;

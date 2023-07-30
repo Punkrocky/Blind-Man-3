@@ -5,9 +5,32 @@
  * \brief Header for the MeshManager
  **********************************************************************************************************************/
 #pragma once
+
 #include <vector>
 
-#include "GraphicsComponent.h"
+#include "OpenGLIncludes.h"
+
+ /// Data related to mesh objects
+class Mesh
+{
+public:
+  enum class MeshType
+  {
+    INVALID_MESH_TYPE = -1,
+    Square_m,
+    MESH_TYPE_TOTAL
+  };
+
+  Mesh(MeshType type = MeshType::Square_m);
+  Mesh(const Mesh& rhs);
+  ~Mesh() = default;
+
+  GLuint GetVertexArray();
+
+private:
+  MeshType Type;
+  GLuint VAO;
+};
 
 /// Holds a basic mesh object to be used by all entities. Removes the need for each entity to have a mesh object.
 class MeshManager
@@ -16,8 +39,12 @@ public:
   MeshManager();
   ~MeshManager() = default;
 
-  const Mesh& GetMeshObject() const;
+  Mesh* GetMeshObject(Mesh::MeshType type);
 
 private:
-  Mesh SquareMesh; //!< Basic square mesh every entity uses
+  std::vector<Mesh> MeshArray; //!< Basic square mesh every entity uses
 };
+
+typedef Mesh* MeshPtr;
+typedef MeshManager* MeshManagerPtr;
+typedef Mesh::MeshType MType;

@@ -10,11 +10,53 @@
 
 #include "ShaderManager.h"
 
-ShaderManager::ShaderManager() {}
-ShaderManager::~ShaderManager() {}
+Shader::Shader(std::string vertexFile, std::string fragmentFile) : VertexFile(vertexFile), FragmentFile(fragmentFile) {}
 
 
-void ShaderManager::Init()
+GLuint Shader::GetShaderLocation() const
+{
+  return ShaderLocation;
+}
+
+
+std::string Shader::GetVertexFile() const
+{
+  return VertexFile;
+}
+
+
+std::string Shader::GetFragmentFile() const
+{
+  return FragmentFile;
+}
+
+
+void Shader::SetShaderLocation()
+{
+  ShaderLocation = glCreateProgram();
+}
+
+
+pt::ptree Shader::Save() const
+{
+  pt::ptree node;
+
+  node.add("Shader Type", static_cast<int>(Type));
+  node.add("Vertex Shader", VertexFile);
+  node.add("Fragment Shader", FragmentFile);
+
+  return node;
+}
+
+
+void Shader::Load(pt::ptree node)
+{
+  Type = static_cast<ShaderType>(node.get<int>("Shader Type"));
+  VertexFile = SHADER_PATH + node.get<std::string>("Vertex Shader");
+  FragmentFile = SHADER_PATH + node.get<std::string>("Fragment Shader");
+}
+
+ShaderManager::ShaderManager()
 {
   Serializer ShaderReader(SHADER_PATH"ShaderList.json", Serializer::Mode::Read);
 
@@ -23,6 +65,18 @@ void ShaderManager::Init()
   {
     BuildShader(TempShader);
   }
+}
+
+
+GLuint ShaderManager::GetShaderID(Shader::ShaderType index) const
+{
+  return ShaderArray[static_cast<int>(index)].GetShaderLocation();
+}
+
+
+Shader* ShaderManager::GetShaderPtr(Shader::ShaderType type)
+{
+  return &ShaderArray[static_cast<int>(type)];
 }
 
 /**********************************************************************************************************************\

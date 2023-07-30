@@ -1,7 +1,7 @@
 /*******************************************************************************************************************//**
  * \file Walking.h
  * \author Matthew LaDouceur
- * \date 6-1-20118
+ * \date 6-1-2018
  * \brief Header for the map generation
  **********************************************************************************************************************/
 #pragma once
@@ -10,11 +10,11 @@
 #include <iomanip>
 #include <fstream>
 #include <vector>
-#include <random>
 #include <string>
 #include <chrono>
 
-
+#include "Random.h"
+#include "OpenGLIncludes.h"
 
 namespace Blind
 {
@@ -38,31 +38,53 @@ namespace Blind
     };
 
     // Helper functions
-    DIRECTION RandomInt(int max, int min = 0);
+    DIRECTION RandomDirection(int max, int min = 0);
     void CenterPosition();
     void RandomPosition();
 
-    std::mt19937 Generator;
+    //std::mt19937 Generator;
+    Random RNG;   // Creates random numbers
     int Position; // Current position on the map
-    int Seed; // Starting condition for the RNG
-    int Size; // Size of the map this mole is attached to
+    int Seed;     // Starting condition for the RNG
+    int Size;     // Size of the map this mole is attached to
+  };
+
+
+  enum TileTypes
+  {
+    NONE = 0,
+    WALL,
+    ROOM_SMALL,
+    ROOM_MEDIUM,
+    ROOM_LARGE
   };
 
   class World
   {
   public:
+    World() = delete;
     World(int size, int moleCount);
     ~World();
 
+    enum PalletType
+    {
+      YELLOW_PURPLE = 0,
+      ISLAND_TROPICAL
+    };
+
     //Getters and Setters
-    int GetValue(int x, int y);
+    int GetValue(int y, int x);
     int GetValue(int position);
-    void SetValue(int x, int y, int value);
+    void SetValue(int y, int x, int value);
     int GetLargestValue();
+    glm::vec3 GetTileColor(int y, int x, PalletType type);
 
     //Map generating functions
-    void MAPGenerateGenOrder();
-    void MAPGenerateIslandMap();
+    void GenerateInOrder();
+    void GenerateIslands();
+    void GenerateDungeon();
+
+    void Noise();
 
     //Map manipulation functions
     void CleanMap();
@@ -72,12 +94,16 @@ namespace Blind
     void ReadMap(std::string name);
 
   private:
+    float Fade(float t);
+    float Lerp(float t, float x, float y);
+
     std::string filename;   // Name for the image file
     std::ofstream TileFile; // Handle for creation an output image
+    Random WorldRNG;        // Base for the noise function
 
-    std::vector<std::vector<int>> TileMap; // Intager representation of the generated world
-    std::vector<Mole> MoleArray;           // Stores all the Moles used to generate this map
-    int LargestValue;                      // Global maximum on this map
-    int Size;                              // Size of the map to generate
+    std::vector<std::vector<float>> TileMap; // Intager representation of the generated world
+    std::vector<Mole> MoleArray;             // Stores all the Moles used to generate this map
+    int LargestValue;                        // Global maximum on this map
+    int Size;                                // Size of the map to generate
   };
 }

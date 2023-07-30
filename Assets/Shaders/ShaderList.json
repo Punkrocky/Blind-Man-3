@@ -1,7 +1,12 @@
 {
-    "0": {
-        "Shader Type": 0,
-        "Vertex Shader": "BasicShader.vs",
-        "Fragment Shader": "BasicShader.fs"
-    }
+  "0": {
+    "Shader Type": 0,
+    "Vertex Shader": "BasicShader.vs",
+    "Fragment Shader": "BasicShader.fs"
+  },
+  "1": {
+    "Shader Type": 1,
+    "Vertex Shader": "Line.vs",
+    "Fragment Shader": "Line.fs"
+  }
 }

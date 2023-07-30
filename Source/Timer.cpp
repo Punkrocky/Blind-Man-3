@@ -23,7 +23,15 @@ void Timer::StartFrame()
 
 float Timer::EndFrame()
 {
-  std::chrono::time_point<std::chrono::steady_clock> NewestTimePoint = Clock.now();
-  FrameTime = NewestTimePoint - LastTimePoint;
+  std::chrono::time_point<std::chrono::steady_clock> CurrentTimePoint = Clock.now();
+  FrameTime = CurrentTimePoint - LastTimePoint;
+  LastTimePoint = CurrentTimePoint;
+
   return FrameTime.count();
+}
+
+std::ostream& operator<<(std::ostream& os, const Timer& T)
+{
+  os << "FrameTime: " << T.FrameTime.count() << '\n';
+  return os;
 }

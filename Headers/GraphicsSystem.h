@@ -15,17 +15,22 @@
 #include "MeshManager.h"
 #include "Camera.h"
 #include "Entity.h"
+#include "Random.h"
+typedef class Engine;
 
 /// System that contains all logic to update entities with graphics components
 class GraphicsSystem
 {
 public:
-
   GraphicsSystem();
+  GraphicsSystem(Engine* ptr);
+  // TODO: remove global friend function for a friend class Engine
   friend void DestroySystem(GraphicsSystem* system);
 
-  void Update(float dt, const std::vector<EntityPtr>& entities);
-  static void MoveCamera(int n);
+  void Update(float dt, const EntityPtr& entities, int arraySize);
+  void MoveCamera(double x, double y);
+  void ScrollCamera(double x, double y);
+  glm::vec4 ViewToWorldTransform(const glm::vec4& vec);
 
 private:
   /// Store data used to create a VAO for rendering
@@ -54,32 +59,15 @@ private:
     std::vector<unsigned int> indices;
   };
 
-
+  Random PRNG;              //!< Random number generator, independent of others
   size_t EntityCount = 0;   //!< The number of entities in the last render
-  static Camera Viewport;   //!< Object that represents the window into the world
+  Camera Viewport;          //!< Object that represents the window into the world
   GLFWwindow* Window;       //!< Handle on the window we are rendering to
   RenderData GeometryData;  //!< Collection of GPU memory address
-
-  TextureManager TxManager; //!< Texture Manager
-  ShaderManager ShManager;  //!< Shader Manager
-  MeshManager MsManager;    //!< Mesh Manager
-
-  std::vector<glm::vec3> BatchPositions;  //!< Hold all the world space position data for a render pass
-  std::vector<glm::vec4> BatchColors;     //!< Hold all the color data for a render pass
-  std::vector<glm::vec2> BatchTextureUVs; //!< Hold all the texture uv data for a render pass
-  std::vector<float> BatchTextureIndices; //!< Hold all the texture index data for the render pass
-  std::vector<unsigned int> BatchIndices; //!< Hold all the indices into the above arrays of data
-
-  //std::vector<GraphicsComponent> GraphicsCompnents;
+  glm::mat4 ScreenBase;     //!< Transform screen coords into NDC
+  Engine* Parent;           //!< Pointer to the Engine that manages this system
 
   ~GraphicsSystem();
   void Init();
   void Shutdown();
-
-  void VAOPrepare(GraphicsComponent* comp);
-  void VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
-                  const std::vector<glm::vec2>& textureUV, const std::vector<float>& textureIndices,
-                  const std::vector<unsigned int>& indicies);
-
-  void BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index);
 };

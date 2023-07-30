@@ -14,16 +14,27 @@ Entity::Entity()
 }
 
 
-Entity::Entity(const TransformComponent& transform, const GraphicsComponent& graphics)
+Entity::Entity(TransformComponentPtr transform, GraphicsComponentPtr graphics)
 {
-  SetTransformComponent(transform);
-  SetGraphicsComponent(graphics);
+  TransformComp = transform;
+  GraphicsComp = graphics;
 }
 
 
-void DestroyEntity(Entity* entity)
+void Entity::Draw(const glm::mat4& viewMat) const
 {
-  delete entity;
+  GLuint ShaderID = GraphicsComp->shader->GetShaderLocation();
+  glUseProgram(ShaderID);
+  glUniform1i(glGetUniformLocation(ShaderID, "Texture"), 0);
+  glBindTextureUnit(0, GraphicsComp->texture->GetTextureLocation());
+
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &viewMat[0][0]);
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, &TransformComp->GetModelMatrix()[0][0]);
+  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &GraphicsComp->GetColor()[0]);
+
+  glBindVertexArray(GraphicsComp->mesh->GetVertexArray());
+  glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, (void*)0);
+  glBindVertexArray(0);
 }
 
 
@@ -40,16 +51,16 @@ GraphicsComponentPtr Entity::GetGraphicsComponent() const
 
 
 
-void Entity::SetTransformComponent(const TransformComponent& transform)
-{
-  TransformComp = new TransformComponent(transform);
-}
-
-
-void Entity::SetGraphicsComponent(const GraphicsComponent& graphics)
-{
-  GraphicsComp = new GraphicsComponent(graphics);
-}
+//void Entity::SetTransformComponent(TransformComponentPtr transform)
+//{
+//  TransformComp = transform;
+//}
+//
+//
+//void Entity::SetGraphicsComponent(GraphicsComponentPtr graphics)
+//{
+//  GraphicsComp = graphics;
+//}
 
 /**********************************************************************************************************************\
 |*************************************************| PRIVATE MEMBERS |**************************************************|
@@ -59,4 +70,14 @@ Entity::~Entity()
 {
   delete TransformComp;
   delete GraphicsComp;
+  TransformComp = nullptr;
+  GraphicsComp = nullptr;
+}
+
+
+void Entity::InitGraphicsComponent(ShaderPtr s, TexturePtr t, MeshPtr m)
+{
+  GraphicsComp->shader = s;
+  GraphicsComp->texture = t;
+  GraphicsComp->mesh = m;
 }

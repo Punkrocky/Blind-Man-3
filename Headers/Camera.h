@@ -7,28 +7,19 @@
 #pragma once
 
 #include "OpenGLIncludes.h"
+#include <ostream>
 
 class Camera
 {
 public:
-
   Camera();
   ~Camera();
 
-  glm::vec3 GetPosition()
-  {
-    return Position;
-  }
+  friend std::ostream& operator<<(std::ostream& os, const Camera& obj);
 
-  glm::vec3 GetScale()
-  {
-    return Scale;
-  }
-
-  float GetRotation()
-  {
-    return Rotation;
-  }
+  inline glm::vec3 GetPosition() const { return Position; }
+  inline glm::vec3 GetScale() const { return Scale; }
+  inline float GetRotation() const { return Rotation; }
 
   void SetPosition(glm::vec3 position);
   void SetScale(glm::vec3 scale);

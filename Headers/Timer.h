@@ -7,12 +7,15 @@
 #pragma once
 
 #include <chrono>
+#include <ostream>
 
 class Timer
 {
 public:
   Timer();
   ~Timer();
+
+  friend std::ostream& operator<<(std::ostream& os, const Timer& T);
 
   void StartFrame();
   float EndFrame();

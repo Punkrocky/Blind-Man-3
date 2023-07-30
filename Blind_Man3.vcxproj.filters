@@ -57,6 +57,9 @@
     <ClCompile Include="Source\Walking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers\GraphicsSystem.h">
@@ -119,6 +122,18 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Assets\Shaders\BasicShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\Line.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\Line.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Shaders\ShaderList.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Textures\TextureList.json">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

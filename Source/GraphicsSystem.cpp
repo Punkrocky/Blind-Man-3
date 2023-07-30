@@ -9,10 +9,9 @@
 
 #include "GraphicsSystem.h"
 #include "GameWindow.h"
+#include "Engine.h"
 #include "Input.h"
 
-
-Camera GraphicsSystem::Viewport;
 
 
 /*!
@@ -98,11 +97,16 @@ void GLAPIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
  * \brief Default constructor for the Graphics System
  *
  */
-GraphicsSystem::GraphicsSystem()
+GraphicsSystem::GraphicsSystem() : PRNG(1200), ScreenBase(0.0f)
 {
   this->Init();
 }
 
+
+GraphicsSystem::GraphicsSystem(Engine* ptr) : Parent(ptr), PRNG(1200), ScreenBase(0.0f)
+{
+  this->Init();
+}
 
 /*!
  * \brief Explicit destructor for the graphics system to dissuade people from accidentaly makeing new Graphics systems
@@ -125,142 +129,131 @@ void DestroySystem(GraphicsSystem* system)
  * \param entities
  *  A vector of entity pointers that need to be drawn to the screen this frame
  */
-void GraphicsSystem::Update(float dt, const std::vector<EntityPtr>& entities)
+void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
 {
+  DebugTimer.StartFrame();
+
   // Remove anything drawn to the last buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
-  size_t Size = entities.size();
-
-  // If the data in our entities has changed we need to update our render data
-  if (Size != EntityCount)
-  {
-    EntityCount = Size;
-    size_t ResizeSize = EntityCount * VERTEX_COUNT;
-
-    BatchPositions.resize(ResizeSize);
-    BatchColors.resize(ResizeSize);
-    BatchTextureUVs.resize(ResizeSize);
-    BatchTextureIndices.resize(ResizeSize);
-    
-    BatchIndices.resize(EntityCount * INDEX_COUNT);
-
-
-    for (int i = 0; i < EntityCount; ++i)
-    {
-      BatchPrepare(entities[i]->GetGraphicsComponent(), entities[i]->GetTransformComponent()->GetModelMatrix(), i);
-    }
-
-    VAOPrepare(BatchPositions, BatchColors, BatchTextureUVs, BatchTextureIndices, BatchIndices);
-  }
-
-  GLuint ProgramID = ShManager.GetShaderID(entities[0]->GetGraphicsComponent()->GetShaderType());
-
-  // Tell OpenGL the shader we are using
-  glUseProgram(ProgramID);
-
-
-
-  glBindTextureUnit(0, TxManager.GetTextureID(Texture::TextureType::Default_t));
-  glBindTextureUnit(1, TxManager.GetTextureID(Texture::TextureType::Grass_t));
-  glBindTextureUnit(2, TxManager.GetTextureID(Texture::TextureType::Tree_t));
-  glBindTextureUnit(3, TxManager.GetTextureID(Texture::TextureType::Farm_t));
-  glBindTextureUnit(4, TxManager.GetTextureID(Texture::TextureType::White_t));
-
   // Get the View matrix
-  glm::mat4 Matrix = Viewport.GetViewMatrix();
-  // Send the matrix combination to the shader
-  glUniformMatrix4fv(glGetUniformLocation(ProgramID, "MVP"), 1, GL_FALSE, &Matrix[0][0]);
+  glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
 
-  // Bind the Vertex array for the current entity
+  for (int i = 0; i < arraySize; ++i)
+  {
+    entities[i].Draw(ViewMatrix);
+  }
+  glm::vec4 LineColor(1.0f, 0.0f, 0.0f, 1.0f); // Red
+  glm::mat4 InverseMatrix = glm::inverse(ViewMatrix);
+  glm::vec3 ViewPortScale = Viewport.GetScale();
+  ViewPortScale.y = -ViewPortScale.y;
+
+  // Workaround for not having an entity, works because .json is ordered specifically
+  GLuint ShaderID = 4;
+  glUseProgram(ShaderID);
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &ViewMatrix[0][0]);
+  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+
+  // Get the mouse screen position and transform it to NDC then to worldspace
+  glm::vec4 MousePos = InverseMatrix * ScreenBase * glm::vec4(GetLastMousePos(), 0.0f, 1.0f);
+  // Transform the NDC position that represents the center, to worldspace
+  glm::vec4 ScreenCenter = InverseMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+  glm::mat4 mMat = Parent->GetEntityAtCoords(Parent->GetTileCoords(MousePos)).GetTransformComponent()->GetModelMatrix();
+  glm::mat4 wPos;
+  wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
+  wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
+  wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
+  wPos[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
+  wPos = mMat * wPos;
+
+  const int pSize = 12;
+  glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
+  // Line 0
+  Points[0] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  Points[1] = MousePos;
+  // Line 1
+  Points[2] = wPos[0];
+  Points[3] = wPos[1];
+  // Line 2
+  Points[4] = wPos[1];
+  Points[5] = wPos[2];
+  // Line 3
+  Points[6] = wPos[2];
+  Points[7] = wPos[3];
+  // Line 4
+  Points[8] = wPos[3];
+  Points[9] = wPos[0];
+  // Line 5
+  Points[10] = ScreenCenter;
+  Points[11] = MousePos;
+
   glBindVertexArray(GeometryData.VAO);
-  glDrawElements(GL_TRIANGLES, BatchIndices.size(), GL_UNSIGNED_INT, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glDrawArrays(GL_LINES, 0, pSize);
+
+  glUseProgram(0);
   glBindVertexArray(0);
 
   glfwSwapBuffers(Window);
   glfwPollEvents();
+
+  DebugTimer.EndFrame();
+  std::cout << " - Graphics " << DebugTimer;
 }
 
 
 /*!
- * \brief Given a value we determine how the camera should move.
+ * \brief Given a value we determine how the camera should move
  *
  * \param Case
- *  Value needed to determine the required action for the camera.
+ *  Value needed to determine the required action for the camera
  */
-void GraphicsSystem::MoveCamera(int Case)
+void GraphicsSystem::MoveCamera(double x, double y)
 {
   // Current values of the camera
   glm::vec3 pos = Viewport.GetPosition();
-  glm::vec3 scale = Viewport.GetScale();
-  float angle = Viewport.GetRotation();
+  float scale = 1.0f / Viewport.GetScale().z;
+  float radsAngle = glm::radians(Viewport.GetRotation());
+  glm::mat4 RotMat = glm::rotate(glm::mat4(1.0f), radsAngle, glm::vec3(0, 0, -1));
 
-  /* Convert the angle to radians and change the perception of the angle so that it will appear like the camera is 
-   * moving. We could get a similar effect without the 180 - X if we flipped the sign when adding the RotationOffset
-   * to pos. */
-  float rads = glm::radians(180 - angle);
-
-  /* Create a rotation matrix to calculate the anti rotation of the camera so that when we move the camera the 
-   * keyboard inputs will be relative to the monitor rather than the world orientation. */
-  glm::mat2 RotationMat(glm::cos(rads), glm::sin(rads), -(glm::sin(rads)), glm::cos(rads));
-
-  // Use the given value to determine how the camera should react
-  switch (Case)
-  {
-  case UP:
-  {
-    // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
-    glm::vec2 RotateOffset(0.0f, scale.y / (DEFAULT_SCALE));
-    RotateOffset = RotationMat * RotateOffset;
-    pos += glm::vec3(RotateOffset, 0.0f);
-    break;
-  }
-  case DOWN:
-  {
-    // We want to move up relative to the monitor so we need a vector with a Y component for the rotation matrix.
-    glm::vec2 RotateOffset(0.0f, scale.y / (DEFAULT_SCALE));
-    RotateOffset = RotationMat * RotateOffset;
-    pos -= glm::vec3(RotateOffset, 0.0f);
-    break;
-  }
-  case LEFT:
-  {
-    // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
-    glm::vec2 RotateOffset(scale.x / (DEFAULT_SCALE), 0.0f);
-    RotateOffset = RotationMat * RotateOffset;
-    pos -= glm::vec3(RotateOffset, 0.0f);
-    break;
-  }
-  case RIGHT:
-  {
-    // We want to move up relative to the monitor so we need a vector with a X component for the rotation matrix.
-    glm::vec2 RotateOffset(scale.x / (DEFAULT_SCALE), 0.0f);
-    RotateOffset = RotationMat * RotateOffset;
-    pos += glm::vec3(RotateOffset, 0.0f);
-    break;
-  }
-  case BACK:
-    scale *= 1.1f;
-    break;
-  case FORWARD:
-    scale *= 0.9f;
-    break;
-  case ROTATE_CCW:
-    angle += 5.0f;
-    break;
-  case ROTATE_CW:
-    angle -= 5.0f;
-    break;
-  default:
-    return;
-  }
+  // Modify the position based on any change to the viewport scale(zooming)
+  pos += glm::vec3(RotMat * (glm::vec4(x, y, -1, 1.0f) / scale));
+  pos.z = -1.0f;
   
-  // Set all of the camera variables in case any were changed.
+  // Apply changes to the viewport
   Viewport.SetPosition(pos);
-  Viewport.SetScale(scale);
-  Viewport.SetRotation(angle);
 }
 
+
+void GraphicsSystem::ScrollCamera(double x, double y)
+{
+  glm::vec3 scale = Viewport.GetScale();  // size of the viewport in the world
+  glm::vec3 pos = Viewport.GetPosition(); // Current position of the viewport
+  glm::mat4 InvViewMat = glm::inverse(Viewport.GetViewMatrix());
+
+  // Camera zoom to mouse position.
+  glm::vec4 mouseWorldPos = InvViewMat * ScreenBase * glm::vec4(GetLastMousePos(), 0.0f, 1.0f);
+  glm::vec4 screenCenter = InvViewMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  glm::vec4 mouseWorldVec = (mouseWorldPos - screenCenter) * static_cast<float>(y);
+
+  pos += glm::vec3(mouseWorldVec);
+  scale *= (1.0 + y);
+
+  Viewport.SetScale(scale);
+  Viewport.SetPosition(pos);
+}
+
+
+
+glm::vec4 GraphicsSystem::ViewToWorldTransform(const glm::vec4& vec)
+{
+  return glm::inverse(Viewport.GetViewMatrix()) * ScreenBase * vec;
+}
 
 /**********************************************************************************************************************\
 |*************************************************| PRIVATE MEMBERS |**************************************************|
@@ -287,7 +280,11 @@ void GraphicsSystem::Init()
   glfwGetWindowSize(Window, &WindowSize.x, &WindowSize.y);
   Viewport.SetScale(WindowSize);
 
+  // Input callback functions
   glfwSetKeyCallback(Window, KeyboardInputCallback);
+  glfwSetMouseButtonCallback(Window, MouseButtonCallback);
+  glfwSetCursorPosCallback(Window, MouseCallback);
+  glfwSetScrollCallback(Window, MouseScrollCallback);
 
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
@@ -299,7 +296,6 @@ void GraphicsSystem::Init()
 
   // Set the clear color to a nice blue-gray background color
   glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-  //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -309,25 +305,16 @@ void GraphicsSystem::Init()
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glDebugMessageCallback(DebugCallback, 0);
 
-  // Shader Manager
-  ShManager.Init();
-  TxManager.Init();
-
-  GeometryData.ShaderID = ShManager.GetShaderID(Shader::ShaderType::Basic_s);
-
-  glUseProgram(GeometryData.ShaderID);
-  int samples[5] = { 0,1,2,3,4 };
-  glUniform1iv(glGetUniformLocation(GeometryData.ShaderID, "Texture"), 5, samples);
-  glUseProgram(0);
-
   glGenVertexArrays(1, &GeometryData.VAO);
   glGenBuffers(1, &GeometryData.PositionVBO);
-  glGenBuffers(1, &GeometryData.ColorVBO);
-  glGenBuffers(1, &GeometryData.TextureVBO);
-  glGenBuffers(1, &GeometryData.TextureIndexVBO);
-  glGenBuffers(1, &GeometryData.EBO);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+  ScreenBase[0] = glm::vec4(2.0f / WindowSize.x, 0.0f, 0.0f, 0.0f);
+  ScreenBase[1] = glm::vec4(0.0f, -2.0f / WindowSize.y, 0.0f, 0.0f);
+  ScreenBase[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);
+
+  std::cout << "Graphics System Constructed\n";
 }
 
 
@@ -337,132 +324,8 @@ void GraphicsSystem::Init()
  */
 void GraphicsSystem::Shutdown()
 {
-  glDeleteBuffers(1, &GeometryData.PositionVBO);
-  glDeleteBuffers(1, &GeometryData.ColorVBO);
-  glDeleteBuffers(1, &GeometryData.TextureVBO);
-  glDeleteBuffers(1, &GeometryData.TextureIndexVBO);
-  glDeleteBuffers(1, &GeometryData.EBO);
-  glDeleteVertexArrays(1, &GeometryData.VAO);
+  //TODO [2]: Create a shutdown function for the Texture, Shader, and Mesh managers
+  //glDeleteProgram(ShManager->GetShaderID(Shader::ShaderType::Basic_s));
 
-  //TODO [2]: Create a shutdown function for the Texture and Shader managers
-  glDeleteProgram(ShManager.GetShaderID(Shader::ShaderType::Basic_s));
-}
-
-
-/*!
- * \brief Attaches all neccessary information needed to draw a mesh to the Geometry VAO
- *
- * \param comp
- *  A pointer to a graphics component which contains all the information needed to draw the entity
- *
- */
-void GraphicsSystem::VAOPrepare(GraphicsComponent* comp)
-{
-  Mesh mesh = MsManager.GetMeshObject();
-
-  glBindVertexArray(GeometryData.VAO);
-
-  // Build a buffer for the position data for the VAO
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec3), &mesh.GetVertexPositions()[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-  // Build a buffer for the Color data for the VAO
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO); //TODO [5]: Create a full, 6 vertex array for the colors
-  glBufferData(GL_ARRAY_BUFFER, VERTEX_COUNT * sizeof(glm::vec4), &comp->GetColor()[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
-
-  //TODO [4]: Add textureUV's to the old VAOPrepare function.
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDEX_COUNT * sizeof(unsigned int), &mesh.GetIndices()[0], GL_DYNAMIC_DRAW);
-
-  glBindVertexArray(0);
-}
-
-
-/*!
- * \brief Attaches all neccessary information needed to draw a mesh to the Geometry VAO
- *
- * \param comp
- *  A pointer to a graphics component which contains all the information needed to draw the entity
- *
- */
-void GraphicsSystem::VAOPrepare(const std::vector<glm::vec3>& positions, const std::vector<glm::vec4>& colors, 
-                                const std::vector<glm::vec2>& textureUV, const std::vector<float>& textureIndices,
-                                const std::vector<unsigned int>& indicies)
-{
-  glBindVertexArray(GeometryData.VAO);
-
-  // Build a buffer for the position data for the VAO
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), &positions[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  // Build a buffer for the Color data for the VAO
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.ColorVBO);
-  glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec4), &colors[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.TextureVBO);
-  glBufferData(GL_ARRAY_BUFFER, textureUV.size() * sizeof(glm::vec2), &textureUV[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.TextureIndexVBO);
-  glBufferData(GL_ARRAY_BUFFER, textureIndices.size() * sizeof(float), &textureIndices[0], GL_DYNAMIC_DRAW);
-  glEnableVertexAttribArray(3);
-  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GeometryData.EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicies.size() * sizeof(unsigned int), &indicies[0], GL_DYNAMIC_DRAW);
-
-  glBindVertexArray(0);
-}
-
-
-/*!
- * \brief Adds the data from the given component to the graphics system for a batch render
- *
- * \param comp
- *  The graphics component we are adding to the batch render pass
- */
-void GraphicsSystem::BatchPrepare(GraphicsComponent* comp, const glm::mat4& modleMatrix, int index)
-{
-  Mesh ComponentMesh = MsManager.GetMeshObject();
-
-  // Calculate the world positon
-  glm::mat4 PositionComposit = modleMatrix * ComponentMesh.GetVertexPositions();
-  // Store the world positon data
-  for (int i = 0; i < VERTEX_COUNT; ++i)
-  {
-    BatchPositions[index * VERTEX_COUNT + i] = PositionComposit[i];
-  }
-
-  // Store the color and texture UV data
-  for (int i = 0; i < VERTEX_COUNT; ++i)
-  {
-    int BatchIndex = index * VERTEX_COUNT + i;
-
-    BatchColors[BatchIndex] = comp->GetColor();
-    BatchTextureIndices[BatchIndex] = comp->GetTextureIndex();
-    BatchTextureUVs[BatchIndex] = ComponentMesh.GetVertexTextureCoords()[i];
-  }
-
-  // Get the generic index values
-  std::vector<unsigned int> tempind = ComponentMesh.GetIndices();
-  // Store the new indices into the composit mesh data vectors
-  for (int i = 0; i < INDEX_COUNT; ++i)
-  {
-    // Clalculate the new index
-    BatchIndices[index * INDEX_COUNT + i] = tempind[i] + (index * VERTEX_COUNT);
-  }
+  
 }
