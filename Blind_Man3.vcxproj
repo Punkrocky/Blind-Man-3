@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -148,6 +148,7 @@
     <ClCompile Include="Source\GraphicsComponent.cpp" />
     <ClCompile Include="Source\GraphicsSystem.cpp" />
     <ClCompile Include="Source\Input.cpp" />
+    <ClCompile Include="Source\Logging.cpp" />
     <ClCompile Include="Source\main.cpp" />
     <ClCompile Include="Source\MeshManager.cpp" />
     <ClCompile Include="Source\Random.cpp" />
@@ -158,24 +159,25 @@
     <ClCompile Include="Source\Walking.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\BaseComponent.h" />
-    <ClInclude Include="Headers\BaseSystem.h" />
-    <ClInclude Include="Headers\Camera.h" />
-    <ClInclude Include="Headers\Engine.h" />
-    <ClInclude Include="Headers\Entity.h" />
-    <ClInclude Include="Headers\GraphicsComponent.h" />
-    <ClInclude Include="Headers\GraphicsSystem.h" />
-    <ClInclude Include="Headers\Input.h" />
-    <ClInclude Include="Headers\MeshManager.h" />
-    <ClInclude Include="Headers\OpenGLIncludes.h" />
-    <ClInclude Include="Headers\GameWindow.h" />
-    <ClInclude Include="Headers\Random.h" />
-    <ClInclude Include="Headers\Serializer.h" />
-    <ClInclude Include="Headers\ShaderManager.h" />
-    <ClInclude Include="Headers\TextureManager.h" />
-    <ClInclude Include="Headers\Timer.h" />
-    <ClInclude Include="Headers\TransformComponent.h" />
-    <ClInclude Include="Headers\Walking.h" />
+    <ClInclude Include="Headers\BaseComponent.hpp" />
+    <ClInclude Include="Headers\BaseSystem.hpp" />
+    <ClInclude Include="Headers\Camera.hpp" />
+    <ClInclude Include="Headers\Engine.hpp" />
+    <ClInclude Include="Headers\Entity.hpp" />
+    <ClInclude Include="Headers\GraphicsComponent.hpp" />
+    <ClInclude Include="Headers\GraphicsSystem.hpp" />
+    <ClInclude Include="Headers\Input.hpp" />
+    <ClInclude Include="Headers\Logging.hpp" />
+    <ClInclude Include="Headers\MeshManager.hpp" />
+    <ClInclude Include="Headers\OpenGLIncludes.hpp" />
+    <ClInclude Include="Headers\GameWindow.hpp" />
+    <ClInclude Include="Headers\Random.hpp" />
+    <ClInclude Include="Headers\Serializer.hpp" />
+    <ClInclude Include="Headers\ShaderManager.hpp" />
+    <ClInclude Include="Headers\TextureManager.hpp" />
+    <ClInclude Include="Headers\Timer.hpp" />
+    <ClInclude Include="Headers\TransformComponent.hpp" />
+    <ClInclude Include="Headers\Walking.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\BasicShader.fs" />

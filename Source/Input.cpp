@@ -4,12 +4,11 @@
 * \date 8-25-2022
 * \brief Handle GLFW input
  **********************************************************************************************************************/
-#include "OpenGLIncludes.h"
-#include "GraphicsSystem.h"
-
 #include <iostream>
 
-#include "Input.h"
+#include "OpenGLIncludes.hpp"
+#include "GraphicsSystem.hpp"
+#include "Input.hpp"
 
 void (*DragCamera)(double, double);
 void (*ZoomCamera)(double, double);

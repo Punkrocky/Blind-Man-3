@@ -8,8 +8,8 @@
 
 #include <vector>
 
-#include "Serializer.h"
-#include "OpenGLIncludes.h"
+#include "OpenGLIncludes.hpp"
+#include "Serializer.hpp"
 
 #define SHADER_PATH "../../Assets/Shaders/"
 

@@ -4,11 +4,11 @@
  * \date 4-28-2020
  * \brief Blind Man 3
  **********************************************************************************************************************/
-#include "Engine.h"
-#include "Random.h"
-#include "Input.h"
-
 #include <iostream>
+
+#include "Engine.hpp"
+#include "Random.hpp"
+#include "Input.hpp"
 
 static Random NumberGen(8764);
 static Engine* ThisPtr;
@@ -69,8 +69,8 @@ void SetTileValue(int a)
 }
 
 
-
-Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(120 * 120), WorldSize(120), bShuttingDown(false)
+const int size = 240;
+Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(size * size), WorldSize(size), bShuttingDown(false), DebugLog("Debug_Log")
 {
   PtrBlindWorld = new Blind::World(WorldSize, 1);
   PtrBlindWorld->GenerateIslands();
@@ -87,6 +87,13 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(120 * 120)
   Key_G = &GenerateMap;
   GrabTileValue = &GetTileValue;
   PlaceTileValue = &SetTileValue;
+
+  DebugLog << "World Size: " << std::to_string(size) << '\n';
+#ifdef _DEBUG
+  DebugLog << "Compile mode: Debug\n";
+#else
+  DebugLog << "Compile mode: Release\n";
+#endif
 
   // Managers
   ShManager = new ShaderManager;
@@ -124,6 +131,9 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(120 * 120)
     TempPosition.x = DEFAULT_SCALE;
     TempPosition.y += DEFAULT_SCALE * 2;
   }
+
+
+
   std::cout << "Engine Constructed\n";
 }
 
@@ -139,9 +149,9 @@ void Engine::Init()
   // Empty because evrything can be done in the construtor
 }
 
-
 void Engine::Update(float dt)
 {
+  const int MaxFrames = 600;
   int FrameCount = 0;
   float FrameTime = 0.0f;
   while (!bShuttingDown)
@@ -158,14 +168,17 @@ void Engine::Update(float dt)
 
     PtrGraphicsSys->Update(dt, EntityArray, ArraySize);
 
-    if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()) || GetEscapeKeyState() || FrameCount > 6000)
+    // Test Framerates
+    if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()) || GetEscapeKeyState() || FrameCount >= MaxFrames)
     {
+      DebugLog << "Duration: " << FrameCount << " frames\n";
       bShuttingDown = true;
     }
   }
+
   float AvgFT = FrameTime / FrameCount;
-  std::cout << "Average Frametime: " << AvgFT << '\n';
-  std::cout << "Average Framerate: " << 1.0f / AvgFT << '\n';
+  DebugLog << "Average Frametime: " << std::to_string(AvgFT) << '\n';
+  DebugLog << "Average Framerate: " << std::to_string(1.0f / AvgFT) << '\n';
 }
 
 

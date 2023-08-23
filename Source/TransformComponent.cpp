@@ -4,8 +4,9 @@
  * \date 5-30-2020
  * \brief Source for TransformComponent
  **********************************************************************************************************************/
-#include "TransformComponent.h"
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "TransformComponent.hpp"
 
 /*!
  * \brief Default constructor

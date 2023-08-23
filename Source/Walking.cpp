@@ -5,8 +5,8 @@
  * \brief Source for the map generation
  **********************************************************************************************************************/
 
-#include "Walking.h"
-#include "Input.h"
+#include "Walking.hpp"
+#include "Input.hpp"
 
 #include <STB/stb_image.h>
 #ifndef STBI_MSC_SECURE_CRT

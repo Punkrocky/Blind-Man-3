@@ -6,8 +6,8 @@
  **********************************************************************************************************************/
 #pragma once
 
-#include "OpenGLIncludes.h"
-#include "GraphicsComponent.h"
+#include "GraphicsComponent.hpp"
+#include "OpenGLIncludes.hpp"
 
 #define DEFAULT_SCALE 40.0f //!< Half size of each tile
 

@@ -6,9 +6,9 @@
  **********************************************************************************************************************/
 #include <iostream>
 
-#include "GraphicsSystem.h"
-#include "GameWindow.h"
-#include "Engine.h"
+#include "GraphicsSystem.hpp"
+#include "GameWindow.hpp"
+#include "Engine.hpp"
 
 int main(void)
 {

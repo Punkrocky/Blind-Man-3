@@ -6,8 +6,8 @@
  **********************************************************************************************************************/
 #pragma once
 
-#include "GraphicsComponent.h"
-#include "TransformComponent.h"
+#include "TransformComponent.hpp"
+#include "GraphicsComponent.hpp"
 
 class Entity
 {

@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "ShaderManager.h"
+#include "ShaderManager.hpp"
 
 Shader::Shader(std::string vertexFile, std::string fragmentFile) : VertexFile(vertexFile), FragmentFile(fragmentFile) {}
 

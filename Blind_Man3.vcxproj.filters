@@ -60,60 +60,66 @@
     <ClCompile Include="Source\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Headers\GraphicsSystem.h">
+    <ClInclude Include="Headers\GraphicsSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\OpenGLIncludes.h">
+    <ClInclude Include="Headers\OpenGLIncludes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\GameWindow.h">
+    <ClInclude Include="Headers\GameWindow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Engine.h">
+    <ClInclude Include="Headers\Engine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\BaseSystem.h">
+    <ClInclude Include="Headers\BaseSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\GraphicsComponent.h">
+    <ClInclude Include="Headers\GraphicsComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\ShaderManager.h">
+    <ClInclude Include="Headers\ShaderManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Camera.h">
+    <ClInclude Include="Headers\Camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\TransformComponent.h">
+    <ClInclude Include="Headers\TransformComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Entity.h">
+    <ClInclude Include="Headers\Entity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Timer.h">
+    <ClInclude Include="Headers\Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Input.h">
+    <ClInclude Include="Headers\Input.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Random.h">
+    <ClInclude Include="Headers\Random.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\TextureManager.h">
+    <ClInclude Include="Headers\TextureManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Serializer.h">
+    <ClInclude Include="Headers\Serializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\BaseComponent.h">
+    <ClInclude Include="Headers\BaseComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\MeshManager.h">
+    <ClInclude Include="Headers\MeshManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\Walking.h">
+    <ClInclude Include="Headers\Walking.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Headers\Logging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

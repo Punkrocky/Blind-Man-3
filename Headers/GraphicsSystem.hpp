@@ -8,14 +8,15 @@
 
 #include <vector>
 
-#include "OpenGLIncludes.h"
-#include "GraphicsComponent.h"
-#include "TextureManager.h"
-#include "ShaderManager.h"
-#include "MeshManager.h"
-#include "Camera.h"
-#include "Entity.h"
-#include "Random.h"
+#include "GraphicsComponent.hpp"
+#include "OpenGLIncludes.hpp"
+#include "TextureManager.hpp"
+#include "ShaderManager.hpp"
+#include "MeshManager.hpp"
+#include "Camera.hpp"
+#include "Entity.hpp"
+#include "Random.hpp"
+
 typedef class Engine;
 
 /// System that contains all logic to update entities with graphics components

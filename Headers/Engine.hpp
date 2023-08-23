@@ -6,11 +6,12 @@
  **********************************************************************************************************************/
 #pragma once
 
-#include "GraphicsSystem.h"
-#include "GameWindow.h"
-#include "Entity.h"
-#include "Timer.h"
-#include "Walking.h"
+#include "GraphicsSystem.hpp"
+#include "GameWindow.hpp"
+#include "Logging.hpp"
+#include "Walking.hpp"
+#include "Entity.hpp"
+#include "Timer.hpp"
 
 static Timer DebugTimer;
 
@@ -45,6 +46,7 @@ private:
   TextureManagerPtr TxManager; //!< Texture Manager
   MeshManagerPtr MsManager;    //!< Mesh Manager
   Timer GameTimer;             //!< Timer
+  LogFile DebugLog;            //!< Log file for debug information
 
   EntityPtr EntityArray;                 //!< All Entities
   TransformComponentPtr TransformsArray; //!< All Transform Components for Entities

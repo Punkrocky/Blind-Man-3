@@ -6,8 +6,9 @@
  **********************************************************************************************************************/
 #pragma once
 
-#include <chrono>
 #include <ostream>
+#include <chrono>
+#include <ctime>
 
 class Timer
 {

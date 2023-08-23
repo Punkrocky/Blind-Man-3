@@ -13,8 +13,8 @@
 #include <string>
 #include <chrono>
 
-#include "Random.h"
-#include "OpenGLIncludes.h"
+#include "OpenGLIncludes.hpp"
+#include "Random.hpp"
 
 namespace Blind
 {

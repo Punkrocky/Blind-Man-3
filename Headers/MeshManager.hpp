@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "OpenGLIncludes.h"
+#include "OpenGLIncludes.hpp"
 
  /// Data related to mesh objects
 class Mesh

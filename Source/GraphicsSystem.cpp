@@ -7,10 +7,10 @@
 #include <iostream>
 #include <string>
 
-#include "GraphicsSystem.h"
-#include "GameWindow.h"
-#include "Engine.h"
-#include "Input.h"
+#include "GraphicsSystem.hpp"
+#include "GameWindow.hpp"
+#include "Engine.hpp"
+#include "Input.hpp"
 
 
 

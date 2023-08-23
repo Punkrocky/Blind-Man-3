@@ -6,8 +6,9 @@
  **********************************************************************************************************************/
 #pragma once
 
-#include "OpenGLIncludes.h"
 #include <ostream>
+
+#include "OpenGLIncludes.hpp"
 
 class Camera
 {

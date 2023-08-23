@@ -8,7 +8,7 @@
 #include <STB/stb_image.h>
 #include <string>
 
-#include "TextureManager.h"
+#include "TextureManager.hpp"
 
 Texture::Texture(std::string fileName) : FileName(fileName) {}
 

@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "Entity.h"
+#include "Entity.hpp"
 // TODO [5]: Create a base system class to make system management easier
 
 /// The base class for all systems to inharent from

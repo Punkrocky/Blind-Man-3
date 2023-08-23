@@ -6,8 +6,7 @@
  **********************************************************************************************************************/
 #pragma once
 
-
-#include "OpenGLIncludes.h"
+#include "OpenGLIncludes.hpp"
 
 class GameWindow
 {

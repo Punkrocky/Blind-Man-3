@@ -5,12 +5,13 @@
  * \brief Header for Mesh, Texture, Shader, and GraphicsComponent
  **********************************************************************************************************************/
 #pragma once
+
 #include <vector>
 
-#include "ShaderManager.h"
-#include "TextureManager.h"
-#include "MeshManager.h"
-#include "OpenGLIncludes.h"
+#include "TextureManager.hpp"
+#include "OpenGLIncludes.hpp"
+#include "ShaderManager.hpp"
+#include "MeshManager.hpp"
 
 #define VERTEX_COUNT 4
 #define INDEX_COUNT 6

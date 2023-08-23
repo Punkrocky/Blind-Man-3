@@ -4,7 +4,7 @@
  * \date 8-5-2020
  * \brief Source for the MeshManager
  **********************************************************************************************************************/
-#include "MeshManager.h"
+#include "MeshManager.hpp"
 
 Mesh::Mesh(MeshType type) : Type(type)
 {

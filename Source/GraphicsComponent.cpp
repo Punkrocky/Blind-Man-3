@@ -4,7 +4,7 @@
  * \date 4-28-2020
  * \brief Source for Mesh, Texture, Shader, and GraphicsComponent
  **********************************************************************************************************************/
-#include "GraphicsComponent.h"
+#include "GraphicsComponent.hpp"
 
 
 GraphicsComponent::GraphicsComponent() : Color(1.0f), shader(nullptr), texture(nullptr), mesh(nullptr)
