@@ -5,13 +5,17 @@
  * \brief Blind Man 3
  **********************************************************************************************************************/
 #pragma once
+#include <array>
 
+#include "GlobalDefines.h"
 #include "GraphicsSystem.hpp"
 #include "GameWindow.hpp"
 #include "Logging.hpp"
 #include "Walking.hpp"
 #include "Entity.hpp"
+#include "Chunk.hpp"
 #include "Timer.hpp"
+
 
 static Timer DebugTimer;
 
@@ -27,6 +31,7 @@ public:
 
   bool IsShuttingDown();
   const glm::ivec2& GetTileCoords(const glm::vec2& worldPos);
+  const glm::ivec2& GetChunkCoords(const glm::vec2& worldPos);
   const Entity& GetEntityAtCoords(const glm::ivec2& coords);
 
 private:
@@ -51,9 +56,11 @@ private:
   EntityPtr EntityArray;                 //!< All Entities
   TransformComponentPtr TransformsArray; //!< All Transform Components for Entities
   GraphicsComponentPtr GraphicsArray;    //!< All Graphics Components for Entites
+  std::array<Chunk, CHUNK_PER_WORLD_SQRD>* ChunkArray;
 
-  float dt;           //!< Delta time
-  int WorldSize;      //!< Size of an edge of the world
-  int ArraySize;      //!< Size of arrays needed to store entities and components
-  bool bShuttingDown; //!< Flag to signal shutdown of the program
+  float dt;            //!< Delta time
+  int WorldSizeTiles;  //!< Size of an edge of the world in tiles
+  int WorldSizeChunks; //!< Size of the world in chunks
+  int ArraySize;       //!< Size of arrays needed to store entities and components
+  bool bShuttingDown;  //!< Flag to signal shutdown of the program
 };

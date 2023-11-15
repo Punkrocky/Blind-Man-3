@@ -8,15 +8,14 @@
 
 #include "GraphicsComponent.hpp"
 #include "OpenGLIncludes.hpp"
-
-#define DEFAULT_SCALE 40.0f //!< Half size of each tile
+#include "GlobalDefines.h"
 
 /// Holds data related to how an entity should be orientated in the world
 class TransformComponent
 {
 public:
   TransformComponent();
-  TransformComponent(const glm::vec2& position, float scale = DEFAULT_SCALE, bool isdirty = true);
+  TransformComponent(const glm::vec2& position, float scale = TILE_HALF_SIZE, bool isdirty = true);
   TransformComponent(const TransformComponent& rhs);
   ~TransformComponent() = default;
 

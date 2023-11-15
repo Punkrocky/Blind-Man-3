@@ -10,10 +10,17 @@ Mesh::Mesh(MeshType type) : Type(type)
 {
   // Position Data
   glm::mat4 VertexPositions;
-  VertexPositions[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f); // Top Right
-  VertexPositions[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f); // Bottom Right
+  VertexPositions[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
+  VertexPositions[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
   VertexPositions[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
-  VertexPositions[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f); // Top Left
+  VertexPositions[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
+
+  // Color Data
+  glm::mat4 VertexColors;
+  VertexColors[0] = glm::vec4(1.0f); // White
+  VertexColors[1] = glm::vec4(1.0f); // White
+  VertexColors[2] = glm::vec4(1.0f); // White
+  VertexColors[3] = glm::vec4(1.0f); // White
 
   // Texture Data
   glm::mat4x2 VertexTextureCoords;
@@ -34,23 +41,31 @@ Mesh::Mesh(MeshType type) : Type(type)
 
   GLuint EBO = 0;
   GLuint PosVBO = 0;
+  GLuint ColorVBO = 0;
   GLuint TextureVBO = 0;
 
   // Generate Buffers and Arrays
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &EBO);
   glGenBuffers(1, &PosVBO);
+  glGenBuffers(1, &ColorVBO);
   glGenBuffers(1, &TextureVBO);
 
   // Bind and enable attributes of vertex array
   glBindVertexArray(VAO);
   glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
   glEnableVertexAttribArray(2);
 
   // Bind the position data
   glBindBuffer(GL_ARRAY_BUFFER, PosVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4), &VertexPositions[0], GL_STATIC_DRAW);
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  // Bind the color data
+  glBindBuffer(GL_ARRAY_BUFFER, ColorVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4), &VertexColors[0], GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
   // Bind textures UV data
   glBindBuffer(GL_ARRAY_BUFFER, TextureVBO);
@@ -67,6 +82,7 @@ Mesh::Mesh(MeshType type) : Type(type)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glDeleteBuffers(1, &EBO);
   glDeleteBuffers(1, &PosVBO);
+  glDeleteBuffers(1, &ColorVBO);
   glDeleteBuffers(1, &TextureVBO);
 }
 
@@ -77,6 +93,24 @@ Mesh::Mesh(const Mesh& rhs)
   this->VAO = rhs.VAO;
 }
 
+
+void Mesh::SetColor(const glm::vec4 color)
+{
+  GLuint ColorVBO = 0;
+  glGenBuffers(1, &ColorVBO);
+
+  glm::mat4 VertexColors(color, color, color, color);
+
+  glBindVertexArray(VAO);
+
+  // Bind the color data
+  glBindBuffer(GL_ARRAY_BUFFER, ColorVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4), &VertexColors[0], GL_DYNAMIC_DRAW);
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glBindVertexArray(0);
+  glDeleteBuffers(1, &ColorVBO);
+}
 
 GLuint Mesh::GetVertexArray()
 {

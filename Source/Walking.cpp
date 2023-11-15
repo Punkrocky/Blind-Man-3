@@ -219,6 +219,11 @@ void Blind::World::GenerateDungeon()
 
 }
 
+void Blind::World::GenerateDiamondSquare()
+{
+
+}
+
 /// <summary>
 /// 
 /// </summary>

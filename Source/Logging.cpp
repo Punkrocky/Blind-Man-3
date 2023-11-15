@@ -14,26 +14,31 @@ LogFile::LogFile(std::string filename)
 
   std::time_t Date = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   ctime_s((buffer+1), 26, &Date);
+
+  // Replace newline and terminating null
   buffer[25] = '_';
   buffer[26] = '_';
 
+  // Move year to appear after day date
   buffer[12] = buffer[21];
   buffer[13] = buffer[22];
   buffer[14] = buffer[23];
   buffer[15] = buffer[24];
 
+  // Replace any spaces
   for (int i = 1; i < 27; ++i)
   {
     if (buffer[i] == ' ')
     {
-      buffer[i] += 63;
+      buffer[i] = '_';
     }
   }
 
+  // Add the date, up to the year, to the filename
   filename.append(buffer, 16);
-
-
   filename.append(".txt");
+
+  // Create or open the file
   File = std::fstream(filename, std::ios::out | std::ios::trunc);
   if (!File.is_open())
   {

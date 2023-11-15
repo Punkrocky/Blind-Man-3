@@ -8,19 +8,17 @@
 
 #include <vector>
 
+#include "GlobalDefines.h"
+#include "BaseComponent.hpp"
 #include "TextureManager.hpp"
 #include "OpenGLIncludes.hpp"
 #include "ShaderManager.hpp"
 #include "MeshManager.hpp"
 
-#define VERTEX_COUNT 4
-#define INDEX_COUNT 6
 
-#define TEXTURE_PATH "../../Assets/Textures/"
-#define SHADER_PATH "../../Assets/Shaders/"
 
 /// Holds refrence data for Texture, Shader, and the colors of an attached entity
-class GraphicsComponent
+class GraphicsComponent : public BaseComponent
 {
 public:
   GraphicsComponent();
@@ -29,16 +27,18 @@ public:
   ~GraphicsComponent() = default;
 
   // Getters
-  glm::vec4 GetColor();
+  glm::vec4 GetColor() const;
+  const Shader& GetShader() const;
 
   // Setters
   void SetColor(glm::vec3 color);
 
 private:
-  glm::vec4 Color;    //!< A multiplicative color to be applied on top of the attached texture
-  ShaderPtr shader;   //!< A pointer to the attached Shader
-  TexturePtr texture; //!< A pointer to the attached Texture
-  MeshPtr mesh;       //!< A pointer to the attached Mesh
+  glm::vec4 Color;         //!< A multiplicative color to be applied on top of the attached texture
+  ShaderPtr shader;        //!< A pointer to the attached Shader
+  TexturePtr texture;      //!< A pointer to the attached Texture
+  MeshPtr mesh;            //!< A pointer to the attached Mesh
+  bool isDirty;            //!< Flag if the graphics component changed state since last update
 
   friend class Entity;
 };

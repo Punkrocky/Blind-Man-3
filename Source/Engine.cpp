@@ -29,29 +29,64 @@ void ScrollMouse(double x, double y)
 
 void SmoothMap()
 {
+  std::cout << "Smooting Map...\n";
   ThisPtr->PtrBlindWorld->SmoothMAP();
-  for (int i = 0; i < ThisPtr->WorldSize; ++i)
+  std::cout << "  Recolor tiles";
+  DebugTimer.StartFrame();
+  for (int i = 0; i < ThisPtr->WorldSizeTiles; ++i)
   {
-    for (int j = 0; j < ThisPtr->WorldSize; ++j)
+    for (int j = 0; j < ThisPtr->WorldSizeTiles; ++j)
     {
-      ThisPtr->EntityArray[i * ThisPtr->WorldSize + j].GetGraphicsComponent()->SetColor(ThisPtr->PtrBlindWorld->GetTileColor(i, j, Blind::World::ISLAND_TROPICAL));
+      ThisPtr->EntityArray[i * ThisPtr->WorldSizeTiles + j].GetGraphicsComponent()->SetColor(ThisPtr->PtrBlindWorld->GetTileColor(i, j, Blind::World::ISLAND_TROPICAL));
     }
   }
+  DebugTimer.EndFrame();
+  std::cout << "  " << DebugTimer;
+
+  std::cout << "  Remake chunks";
+  DebugTimer.StartFrame();
+  for (int i = 0; i < CHUNK_PER_WORLD_SQRD; ++i)
+  {
+    ThisPtr->ChunkArray[0][i].InitChunkData();
+  }
+  DebugTimer.EndFrame();
+  std::cout << "  " << DebugTimer;
+  std::cout << "Finished Smooting\n";
 }
 
 void GenerateMap()
 {
+  std::cout << "Generating Map...";
+  DebugTimer.StartFrame();
   ThisPtr->PtrBlindWorld->CleanMap();
   ThisPtr->PtrBlindWorld->GenerateIslands();
   ThisPtr->PtrBlindWorld->SmoothMAP();
   ThisPtr->PtrBlindWorld->SmoothMAP();
-  for (int i = 0; i < ThisPtr->WorldSize; ++i)
+  DebugTimer.EndFrame();
+  std::cout << "  " << DebugTimer;
+
+  std::cout << "  Recolor tiles";
+  DebugTimer.StartFrame();
+  for (int i = 0; i < ThisPtr->WorldSizeTiles; ++i)
   {
-    for (int j = 0; j < ThisPtr->WorldSize; ++j)
+    for (int j = 0; j < ThisPtr->WorldSizeTiles; ++j)
     {
-      ThisPtr->EntityArray[i * ThisPtr->WorldSize + j].GetGraphicsComponent()->SetColor(ThisPtr->PtrBlindWorld->GetTileColor(i, j, Blind::World::ISLAND_TROPICAL));
+      ThisPtr->EntityArray[i * ThisPtr->WorldSizeTiles + j].GetGraphicsComponent()->SetColor(ThisPtr->PtrBlindWorld->GetTileColor(i, j, Blind::World::ISLAND_TROPICAL));
     }
   }
+  DebugTimer.EndFrame();
+  std::cout << "  " << DebugTimer;
+
+  std::cout << "  Remake chunks";
+  DebugTimer.StartFrame();
+  for (int i = 0; i < CHUNK_PER_WORLD_SQRD; ++i)
+  {
+    ThisPtr->ChunkArray[0][i].InitChunkData();
+  }
+  DebugTimer.EndFrame();
+  std::cout << "  " << DebugTimer;
+
+  std::cout << "Finished generating\n";
 }
 
 
@@ -69,14 +104,13 @@ void SetTileValue(int a)
 }
 
 
-const int size = 240;
-Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(size * size), WorldSize(size), bShuttingDown(false), DebugLog("Debug_Log")
+Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(TILES_PER_WORLD_SQRD), WorldSizeTiles(TILES_PER_WORLD), WorldSizeChunks(CHUNK_PER_WORLD), bShuttingDown(false), DebugLog("Debug_Log")
 {
-  PtrBlindWorld = new Blind::World(WorldSize, 1);
+  PtrBlindWorld = new Blind::World(WorldSizeTiles, 1);
   PtrBlindWorld->GenerateIslands();
   PtrBlindWorld->SmoothMAP();
   PtrBlindWorld->SmoothMAP();
-  PtrBlindWorld->SaveMapImage("Test", WorldSize);
+  PtrBlindWorld->SaveMapImage("Test", WorldSizeTiles);
 
   PtrGraphicsSys = new GraphicsSystem(this);
 
@@ -88,7 +122,7 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(size * siz
   GrabTileValue = &GetTileValue;
   PlaceTileValue = &SetTileValue;
 
-  DebugLog << "World Size: " << std::to_string(size) << '\n';
+  DebugLog << "World Size: " << std::to_string(TILES_PER_WORLD) << '\n';
 #ifdef _DEBUG
   DebugLog << "Compile mode: Debug\n";
 #else
@@ -99,24 +133,26 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(size * siz
   ShManager = new ShaderManager;
   TxManager = new TextureManager;
   MsManager = new MeshManager;
-
+  Random colorsRands(16346541);
   // Temp variables to make entities
-  glm::vec2 TempPosition(DEFAULT_SCALE);
+  glm::vec2 TempPosition(TILE_HALF_SIZE);
   glm::vec3 TempColor(1.0f);
 
   // Allocate memory for all the entities and thier components
-  EntityArray = static_cast<EntityPtr>(malloc(sizeof(Entity) * ArraySize));
+  EntityArray = new (std::nothrow) Entity[ArraySize];
   TransformsArray = static_cast<TransformComponentPtr>(malloc(sizeof(TransformComponent) * ArraySize));
   GraphicsArray = static_cast<GraphicsComponentPtr>(malloc(sizeof(GraphicsComponent) * ArraySize));
+  ChunkArray = new (std::nothrow) std::array<Chunk, CHUNK_PER_WORLD_SQRD>;
+
 
   // Apply colors to the tiles based on their generation
-  for (int i = 0; i < WorldSize; ++i)
+  for (int i = 0; i < WorldSizeTiles; ++i)   // Y-axis
   {
-    for (int j = 0; j < WorldSize; ++j)
+    for (int j = 0; j < WorldSizeTiles; ++j) // X-axis
     {
       TempColor = PtrBlindWorld->GetTileColor(i, j, Blind::World::PalletType::ISLAND_TROPICAL);
       
-      int Index = i * WorldSize + j;
+      int Index = i * WorldSizeTiles + j;
       TransformsArray[Index] = TempPosition;
       GraphicsArray[Index] = TempColor;
 
@@ -124,15 +160,23 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(size * siz
       EntityArray[Index].GraphicsComp = &GraphicsArray[Index];
       EntityArray[Index].InitGraphicsComponent(ShManager->GetShaderPtr(SType::Basic_s), TxManager->GetTexturePtr(TType::White_t), MsManager->GetMeshObject(MType::Square_m));
       EntityArray[Index].TransformComp = &TransformsArray[Index];
-      TempPosition.x += DEFAULT_SCALE * 2;
+
+      int GC_Index = (i / TILES_PER_CHUNK) * WorldSizeChunks + (j / TILES_PER_CHUNK);
+      int IC_Index = (i % TILES_PER_CHUNK) * TILES_PER_CHUNK + (j % TILES_PER_CHUNK);
+      (*ChunkArray)[GC_Index].ChunkEntities[IC_Index] = &EntityArray[Index];
+
+      TempPosition.x += TILE_HALF_SIZE * 2;
     }
 
     // Reset the tiles to make the next row
-    TempPosition.x = DEFAULT_SCALE;
-    TempPosition.y += DEFAULT_SCALE * 2;
+    TempPosition.x = TILE_HALF_SIZE;
+    TempPosition.y += TILE_HALF_SIZE * 2;
   }
 
-
+  for (int i = 0; i < ChunkArray->size(); ++i)
+  {
+    ChunkArray[0][i].InitChunkData();
+  }
 
   std::cout << "Engine Constructed\n";
 }
@@ -151,9 +195,11 @@ void Engine::Init()
 
 void Engine::Update(float dt)
 {
-  const int MaxFrames = 600;
+  const int MaxFrames = 60000;
   int FrameCount = 0;
   float FrameTime = 0.0f;
+
+  // Game loop
   while (!bShuttingDown)
   {
     dt = GameTimer.EndFrame();
@@ -163,10 +209,10 @@ void Engine::Update(float dt)
     //{
     //  continue;
     //}
-    std::cout << "      Total " << GameTimer << '\n';
+    //std::cout << "      Total " << GameTimer << '\n';
     GameTimer.StartFrame();
 
-    PtrGraphicsSys->Update(dt, EntityArray, ArraySize);
+    PtrGraphicsSys->Update(dt, ChunkArray, ChunkArray->size());
 
     // Test Framerates
     if (glfwWindowShouldClose(PtrGameWindow->GetPtrGameWindow()) || GetEscapeKeyState() || FrameCount >= MaxFrames)
@@ -212,12 +258,12 @@ bool Engine::IsShuttingDown()
 const glm::ivec2& Engine::GetTileCoords(const glm::vec2& worldPos)
 {
   // Divide by the half size to determine which tile we are in the bounds of
-  glm::ivec2 TileCoords(worldPos / (DEFAULT_SCALE * 2));
+  glm::ivec2 TileCoords(worldPos / (TILE_HALF_SIZE * 2));
 
   // Clamp X corods to the border of the world
-  if (TileCoords.x >= WorldSize)
+  if (TileCoords.x >= WorldSizeTiles)
   {
-    TileCoords.x = WorldSize - 1;
+    TileCoords.x = WorldSizeTiles - 1;
   }
   else if (TileCoords.x < 0)
   {
@@ -225,9 +271,9 @@ const glm::ivec2& Engine::GetTileCoords(const glm::vec2& worldPos)
   }
 
   // Clamp the Y coords to the border of the world
-  if (TileCoords.y >= WorldSize)
+  if (TileCoords.y >= WorldSizeTiles)
   {
-    TileCoords.y = WorldSize - 1;
+    TileCoords.y = WorldSizeTiles - 1;
   }
   else if (TileCoords.y < 0)
   {
@@ -237,8 +283,34 @@ const glm::ivec2& Engine::GetTileCoords(const glm::vec2& worldPos)
   return TileCoords;
 }
 
+const glm::ivec2& Engine::GetChunkCoords(const glm::vec2& worldPos)
+{
+  // TODO: insert return statement here
+  glm::ivec2 ChunkCoords(worldPos / static_cast<float>(TILES_PER_CHUNK));
+
+  if (ChunkCoords.x >= WorldSizeChunks)
+  {
+    ChunkCoords.x = WorldSizeChunks - 1;
+  }
+  else if (ChunkCoords.x < 0)
+  {
+    ChunkCoords.x = 0;
+  }
+
+  if (ChunkCoords.y >= WorldSizeChunks)
+  {
+    ChunkCoords.y = WorldSizeChunks - 1;
+  }
+  else if (ChunkCoords.y < 0)
+  {
+    ChunkCoords.y = 0;
+  }
+
+  return ChunkCoords;
+}
+
 
 const Entity& Engine::GetEntityAtCoords(const glm::ivec2& coords)
 {
-  return EntityArray[coords.y * WorldSize + coords.x];
+  return EntityArray[coords.y * WorldSizeTiles + coords.x];
 }

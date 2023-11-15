@@ -6,6 +6,7 @@
  **********************************************************************************************************************/
 #pragma once
 
+#include "BaseComponent.hpp"
 #include "TransformComponent.hpp"
 #include "GraphicsComponent.hpp"
 
@@ -15,7 +16,7 @@ public:
   Entity();
   Entity(TransformComponentPtr transform,  GraphicsComponentPtr graphics);
 
-  void Draw(const glm::mat4& viewMat) const;
+  void Draw(float dt, const glm::mat4& viewMat) const;
 
   TransformComponentPtr GetTransformComponent() const;
   GraphicsComponentPtr GetGraphicsComponent() const;
@@ -23,6 +24,10 @@ public:
   //void SetTransformComponent(TransformComponentPtr tranform);
   //void SetGraphicsComponent(GraphicsComponentPtr graphics);
 
+  void AddComponent(const BaseComponent& comp);
+  BaseComponent& GetComponent(ComponentType type);
+
+  const unsigned int ID;
 private:
   ~Entity();
   void InitGraphicsComponent(ShaderPtr s, TexturePtr t, MeshPtr m);

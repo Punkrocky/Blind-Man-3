@@ -12,7 +12,7 @@
  * \brief Default constructor
  *
  */
-TransformComponent::TransformComponent() : Positon(0.0f, 0.0f), Scale(DEFAULT_SCALE), isDirty(true)
+TransformComponent::TransformComponent() : Positon(0.0f, 0.0f), Scale(TILE_HALF_SIZE), isDirty(true)
 {}
 
 /*!

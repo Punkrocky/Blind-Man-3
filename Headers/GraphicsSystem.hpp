@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "GlobalDefines.h"
 #include "GraphicsComponent.hpp"
 #include "OpenGLIncludes.hpp"
 #include "TextureManager.hpp"
@@ -16,6 +17,7 @@
 #include "Camera.hpp"
 #include "Entity.hpp"
 #include "Random.hpp"
+#include "Chunk.hpp"
 
 typedef class Engine;
 
@@ -28,7 +30,8 @@ public:
   // TODO: remove global friend function for a friend class Engine
   friend void DestroySystem(GraphicsSystem* system);
 
-  void Update(float dt, const EntityPtr& entities, int arraySize);
+  void Update(float dt, const std::array<Chunk, CHUNK_PER_WORLD_SQRD>* entities, int arraySize);
+  //void Update(float dt, const EntityPtr& entities, int arraySize);
   void MoveCamera(double x, double y);
   void ScrollCamera(double x, double y);
   glm::vec4 ViewToWorldTransform(const glm::vec4& vec);
@@ -66,9 +69,11 @@ private:
   GLFWwindow* Window;       //!< Handle on the window we are rendering to
   RenderData GeometryData;  //!< Collection of GPU memory address
   glm::mat4 ScreenBase;     //!< Transform screen coords into NDC
-  Engine* Parent;           //!< Pointer to the Engine that manages this system
+  Engine* ParentEngine;     //!< Pointer to the Engine that manages this system
 
   ~GraphicsSystem();
+
+  void DrawDebugLines(const glm::mat4& viewMatrix);
   void Init();
   void Shutdown();
 };

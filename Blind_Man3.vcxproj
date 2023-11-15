@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Camera.cpp" />
+    <ClCompile Include="Source\Chunk.cpp" />
     <ClCompile Include="Source\Engine.cpp" />
     <ClCompile Include="Source\Entity.cpp" />
     <ClCompile Include="Source\GameWindow.cpp" />
@@ -162,8 +163,10 @@
     <ClInclude Include="Headers\BaseComponent.hpp" />
     <ClInclude Include="Headers\BaseSystem.hpp" />
     <ClInclude Include="Headers\Camera.hpp" />
+    <ClInclude Include="Headers\Chunk.hpp" />
     <ClInclude Include="Headers\Engine.hpp" />
     <ClInclude Include="Headers\Entity.hpp" />
+    <ClInclude Include="Headers\GlobalDefines.h" />
     <ClInclude Include="Headers\GraphicsComponent.hpp" />
     <ClInclude Include="Headers\GraphicsSystem.hpp" />
     <ClInclude Include="Headers\Input.hpp" />

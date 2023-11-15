@@ -83,6 +83,7 @@ namespace Blind
     void GenerateInOrder();
     void GenerateIslands();
     void GenerateDungeon();
+    void GenerateDiamondSquare();
 
     void Noise();
 

@@ -6,7 +6,10 @@
  **********************************************************************************************************************/
 #include "Entity.hpp"
 
-Entity::Entity()
+static unsigned int ENTITY_ID = 1;
+
+
+Entity::Entity() : ID(ENTITY_ID++)
 {
   // Create an empty Entity
   GraphicsComp = nullptr;
@@ -14,14 +17,14 @@ Entity::Entity()
 }
 
 
-Entity::Entity(TransformComponentPtr transform, GraphicsComponentPtr graphics)
+Entity::Entity(TransformComponentPtr transform, GraphicsComponentPtr graphics) : ID(ENTITY_ID++)
 {
   TransformComp = transform;
   GraphicsComp = graphics;
 }
 
 
-void Entity::Draw(const glm::mat4& viewMat) const
+void Entity::Draw(float dt, const glm::mat4& viewMat) const
 {
   GLuint ShaderID = GraphicsComp->shader->GetShaderLocation();
   glUseProgram(ShaderID);
@@ -31,6 +34,7 @@ void Entity::Draw(const glm::mat4& viewMat) const
   glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &viewMat[0][0]);
   glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, &TransformComp->GetModelMatrix()[0][0]);
   glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &GraphicsComp->GetColor()[0]);
+  //GraphicsComp->SetColor(GraphicsComp->Color);
 
   glBindVertexArray(GraphicsComp->mesh->GetVertexArray());
   glDrawElements(GL_TRIANGLES, INDEX_COUNT, GL_UNSIGNED_INT, (void*)0);

@@ -25,6 +25,8 @@ public:
   Mesh(const Mesh& rhs);
   ~Mesh() = default;
 
+  void SetColor(const glm::vec4 color);
+
   GLuint GetVertexArray();
 
 private:

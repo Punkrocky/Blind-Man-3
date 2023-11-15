@@ -22,6 +22,7 @@ public:
 
 
 protected:
+  unsigned int AttachedID; //!< ID of the entity this component is attached to
   ComponentType Type;
 private:
 };

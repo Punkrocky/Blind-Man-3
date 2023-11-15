@@ -103,7 +103,7 @@ GraphicsSystem::GraphicsSystem() : PRNG(1200), ScreenBase(0.0f)
 }
 
 
-GraphicsSystem::GraphicsSystem(Engine* ptr) : Parent(ptr), PRNG(1200), ScreenBase(0.0f)
+GraphicsSystem::GraphicsSystem(Engine* ptr) : ParentEngine(ptr), PRNG(1200), ScreenBase(0.0f)
 {
   this->Init();
 }
@@ -119,7 +119,7 @@ void DestroySystem(GraphicsSystem* system)
   delete system;
 }
 
-
+static float DeltaT;
 /*!
  * \brief Update the graphics system
  *
@@ -129,7 +129,8 @@ void DestroySystem(GraphicsSystem* system)
  * \param entities
  *  A vector of entity pointers that need to be drawn to the screen this frame
  */
-void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
+void GraphicsSystem::Update(float dt, const std::array<Chunk, CHUNK_PER_WORLD_SQRD>* entities, int arraySize)
+//void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
 {
   DebugTimer.StartFrame();
 
@@ -138,63 +139,15 @@ void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
 
   // Get the View matrix
   glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
-
+  DeltaT += dt;
+  // Draw all entities in the given list
   for (int i = 0; i < arraySize; ++i)
   {
-    entities[i].Draw(ViewMatrix);
+    //entities[i].Draw(glm::sin(DeltaT), ViewMatrix);
+    entities[0][i].Draw(dt, ViewMatrix);
   }
-  glm::vec4 LineColor(1.0f, 0.0f, 0.0f, 1.0f); // Red
-  glm::mat4 InverseMatrix = glm::inverse(ViewMatrix);
-  glm::vec3 ViewPortScale = Viewport.GetScale();
-  ViewPortScale.y = -ViewPortScale.y;
 
-  // Workaround for not having an entity, works because .json is ordered specifically
-  GLuint ShaderID = 4;
-  glUseProgram(ShaderID);
-  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &ViewMatrix[0][0]);
-  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
-
-  // Get the mouse screen position and transform it to NDC then to worldspace
-  glm::vec4 MousePos = InverseMatrix * ScreenBase * glm::vec4(GetLastMousePos(), 0.0f, 1.0f);
-  // Transform the NDC position that represents the center, to worldspace
-  glm::vec4 ScreenCenter = InverseMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-  glm::mat4 mMat = Parent->GetEntityAtCoords(Parent->GetTileCoords(MousePos)).GetTransformComponent()->GetModelMatrix();
-  glm::mat4 wPos;
-  wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
-  wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
-  wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
-  wPos[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
-  wPos = mMat * wPos;
-
-  const int pSize = 12;
-  glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
-  // Line 0
-  Points[0] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  Points[1] = MousePos;
-  // Line 1
-  Points[2] = wPos[0];
-  Points[3] = wPos[1];
-  // Line 2
-  Points[4] = wPos[1];
-  Points[5] = wPos[2];
-  // Line 3
-  Points[6] = wPos[2];
-  Points[7] = wPos[3];
-  // Line 4
-  Points[8] = wPos[3];
-  Points[9] = wPos[0];
-  // Line 5
-  Points[10] = ScreenCenter;
-  Points[11] = MousePos;
-
-  glBindVertexArray(GeometryData.VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-  glDrawArrays(GL_LINES, 0, pSize);
+  DrawDebugLines(ViewMatrix);
 
   glUseProgram(0);
   glBindVertexArray(0);
@@ -203,7 +156,7 @@ void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
   glfwPollEvents();
 
   DebugTimer.EndFrame();
-  std::cout << " - Graphics " << DebugTimer;
+  //std::cout << " - Graphics " << DebugTimer;
 }
 
 
@@ -268,6 +221,98 @@ GraphicsSystem::~GraphicsSystem()
   this->Shutdown();
 }
 
+void GraphicsSystem::DrawDebugLines(const glm::mat4& viewMatrix)
+{
+  glm::vec4 LineColor(1.0f, 0.0f, 0.0f, 1.0f); // Red
+  glm::mat4 InverseMatrix = glm::inverse(viewMatrix);
+  glm::vec3 ViewPortScale = Viewport.GetScale();
+  ViewPortScale.y = -ViewPortScale.y;
+
+  // Workaround for not having an entity, works because .json is ordered specifically
+  GLuint ShaderID = 4;
+
+  glUseProgram(ShaderID);
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &viewMatrix[0][0]);
+  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+
+  // Get the mouse screen position and transform it to NDC then to worldspace
+  glm::vec4 MousePos = InverseMatrix * ScreenBase * glm::vec4(GetLastMousePos(), 0.0f, 1.0f);
+  // Transform the NDC position that represents the center, to worldspace
+  glm::vec4 ScreenCenter = InverseMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+
+  // Tile boundary
+  glm::mat4 mMat = ParentEngine->GetEntityAtCoords(ParentEngine->GetTileCoords(MousePos)).GetTransformComponent()->GetModelMatrix();
+  glm::mat4 wPos;
+  wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
+  wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
+  wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
+  wPos[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
+  wPos = mMat * wPos;
+
+  const int pSize = 12;
+  glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
+  // Line 0
+  Points[0] = glm::vec4(TILES_PER_WORLD / 2.0f, TILES_PER_WORLD / 2.0f, 0.0f, 1.0f);
+  Points[1] = MousePos;
+  // Line 1
+  Points[2] = wPos[0];
+  Points[3] = wPos[1];
+  // Line 2
+  Points[4] = wPos[1];
+  Points[5] = wPos[2];
+  // Line 3
+  Points[6] = wPos[2];
+  Points[7] = wPos[3];
+  // Line 4
+  Points[8] = wPos[3];
+  Points[9] = wPos[0];
+  // Line 5
+  Points[10] = ScreenCenter;
+  Points[11] = MousePos;
+
+  glBindVertexArray(GeometryData.VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glDrawArrays(GL_LINES, 0, pSize); // Draw Tile Boundary
+
+  // Chunk boundary
+  mMat = TransformComponent(glm::vec2(ParentEngine->GetChunkCoords(MousePos)) * static_cast<float>(TILES_PER_CHUNK) + TILES_PER_CHUNK / 2.0f, TILES_PER_CHUNK / 2.0f).GetModelMatrix();
+
+  wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
+  wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
+  wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
+  wPos[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
+  wPos = mMat * wPos;
+
+  // Line 1
+  Points[0] = wPos[0];
+  Points[1] = wPos[1];
+  // Line 2
+  Points[2] = wPos[1];
+  Points[3] = wPos[2];
+  // Line 3
+  Points[4] = wPos[2];
+  Points[5] = wPos[3];
+  // Line 4
+  Points[6] = wPos[3];
+  Points[7] = wPos[0];
+
+  LineColor = glm::vec4 (1.0f, 0.0f, 1.0f, 1.0f); // Purple
+  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+
+  glBindVertexArray(GeometryData.VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+  glDrawArrays(GL_LINES, 0, 8); // Draw Chunk Boundary
+}
+
 /*!
  * \brief Initalizer for the Graphics system and OpenGL
  *
@@ -276,9 +321,11 @@ void GraphicsSystem::Init()
 {
   Window = GameWindow::GetPtrGameWindow();
 
+  // Init Camera to a desired scale (zoom) and position
   glm::ivec3 WindowSize(1);
   glfwGetWindowSize(Window, &WindowSize.x, &WindowSize.y);
-  Viewport.SetScale(WindowSize);
+  Viewport.SetScale(glm::vec3( (WindowSize.x / 8.0f), (WindowSize.y / 8.0f), (1.0f / 8.0f) ));
+  Viewport.SetPosition(glm::vec3(-TILES_PER_WORLD / 2.0f, -TILES_PER_WORLD / 2.0f, -1.0f));
 
   // Input callback functions
   glfwSetKeyCallback(Window, KeyboardInputCallback);
@@ -299,6 +346,8 @@ void GraphicsSystem::Init()
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glfwSwapInterval(0);
 
   // Enable the use of debug messages from opengl
   glEnable(GL_DEBUG_OUTPUT);
