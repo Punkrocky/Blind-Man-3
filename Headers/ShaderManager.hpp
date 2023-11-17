@@ -23,6 +23,7 @@ public:
     INVALID_SHADER_TYPE = -1,
     Basic_s,
     Line_s,
+    Entity_s,
     SHADER_TYPE_TOTAL
   };
 

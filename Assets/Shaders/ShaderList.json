@@ -8,5 +8,10 @@
     "Shader Type": 1,
     "Vertex Shader": "Line.vs",
     "Fragment Shader": "Line.fs"
+  },
+  "2": {
+    "Shader Type": 2,
+    "Vertex Shader": "Entity.vs",
+    "Fragment Shader": "Entity.fs"
   }
 }

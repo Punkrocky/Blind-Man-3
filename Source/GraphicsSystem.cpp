@@ -119,7 +119,16 @@ void DestroySystem(GraphicsSystem* system)
   delete system;
 }
 
-static float DeltaT;
+
+void GraphicsSystem::PreUpdate()
+{
+  DebugTimer.StartFrame();
+
+  // Remove anything drawn to the last buffer
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+
 /*!
  * \brief Update the graphics system
  *
@@ -132,20 +141,35 @@ static float DeltaT;
 void GraphicsSystem::Update(float dt, const std::array<Chunk, CHUNK_PER_WORLD_SQRD>* entities, int arraySize)
 //void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
 {
-  DebugTimer.StartFrame();
-
-  // Remove anything drawn to the last buffer
-  glClear(GL_COLOR_BUFFER_BIT);
-
   // Get the View matrix
   glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
-  DeltaT += dt;
+
   // Draw all entities in the given list
   for (int i = 0; i < arraySize; ++i)
   {
     //entities[i].Draw(glm::sin(DeltaT), ViewMatrix);
     entities[0][i].Draw(dt, ViewMatrix);
   }
+}
+
+
+void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
+{
+  // Get the View matrix
+  glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
+
+  // Draw all entities in the given list
+  for (int i = 0; i < arraySize; ++i)
+  {
+    entities[i].Draw(dt, ViewMatrix);
+  }
+}
+
+
+void GraphicsSystem::PostUpdate()
+{
+  // Get the View matrix
+  glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
 
   DrawDebugLines(ViewMatrix);
 

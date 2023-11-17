@@ -32,6 +32,7 @@ public:
 private:
   MeshType Type;
   GLuint VAO;
+  bool isDirty;
 };
 
 /// Holds a basic mesh object to be used by all entities. Removes the need for each entity to have a mesh object.

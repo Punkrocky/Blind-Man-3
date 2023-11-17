@@ -22,10 +22,11 @@ public:
   {
     INVALID_TEXTURE_TYPE = -1,
     Default_t,
+    White_t,
     Grass_t,
     Tree_t,
     Farm_t,
-    White_t,
+    Farm2_t,
     TEXTURE_TYPE_TOTAL
   };
 

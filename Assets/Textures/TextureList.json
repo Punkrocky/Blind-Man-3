@@ -3,20 +3,24 @@
         "Texture Type": 0,
         "File Name": "000_Default.png"
     },
-    "1": {
-        "Texture Type": 1,
-        "File Name": "001_Grass.png"
+	"1": {
+        "Texture Type": 3,
+        "File Name": "001_White.png"
     },
     "2": {
-        "Texture Type": 2,
-        "File Name": "002_Tree.png"
+        "Texture Type": 1,
+        "File Name": "002_Grass.png"
     },
     "3": {
-        "Texture Type": 3,
-        "File Name": "003_Farm.png"
+        "Texture Type": 2,
+        "File Name": "003_Tree.png"
     },
     "4": {
+        "Texture Type": 3,
+        "File Name": "004_Farm.png"
+    },
+    "5": {
         "Texture Type": 4,
-        "File Name": "004_White.png"
+        "File Name": "005_Farm2.png"
     }
 }

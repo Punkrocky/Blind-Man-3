@@ -185,6 +185,8 @@
   <ItemGroup>
     <None Include="Assets\Shaders\BasicShader.fs" />
     <None Include="Assets\Shaders\BasicShader.vs" />
+    <None Include="Assets\Shaders\Entity.fs" />
+    <None Include="Assets\Shaders\Entity.vs" />
     <None Include="Assets\Shaders\Line.fs" />
     <None Include="Assets\Shaders\Line.vs" />
     <None Include="Assets\Shaders\ShaderList.json" />

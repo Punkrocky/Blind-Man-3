@@ -7,6 +7,7 @@
 
 #include "Walking.hpp"
 #include "Input.hpp"
+#include "Timer.hpp"
 
 #include <STB/stb_image.h>
 #ifndef STBI_MSC_SECURE_CRT
@@ -29,6 +30,7 @@
 #define MOLE_MOVE_DOWN Position += Size
 #define MOLE_MOVE_UP Position -= Size
 
+static Timer DebugWgenTimer;
 
 
 Blind::World::World(int size, int moleCount) : Size(size), WorldRNG(Random(1615134))
@@ -77,6 +79,8 @@ int Blind::World::GetLargestValue()
 
 glm::vec3 Blind::World::GetTileColor(int y, int x, PalletType type)
 {
+  //DebugWgenTimer.StartFrame();
+
   glm::vec3 TempColor(0.0f);
   // Border
   if (x == 0 || y == 0 || x == (Size - 1) || y == (Size - 1))
@@ -146,6 +150,10 @@ glm::vec3 Blind::World::GetTileColor(int y, int x, PalletType type)
   default:
     break;
   }
+
+  //DebugWgenTimer.EndFrame();
+  //std::cout << "    " << DebugWgenTimer;
+
   return TempColor;
 }
 

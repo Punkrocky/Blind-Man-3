@@ -30,8 +30,11 @@ public:
   // TODO: remove global friend function for a friend class Engine
   friend void DestroySystem(GraphicsSystem* system);
 
+  void PreUpdate();
   void Update(float dt, const std::array<Chunk, CHUNK_PER_WORLD_SQRD>* entities, int arraySize);
-  //void Update(float dt, const EntityPtr& entities, int arraySize);
+  void Update(float dt, const EntityPtr& entities, int arraySize);
+  void PostUpdate();
+
   void MoveCamera(double x, double y);
   void ScrollCamera(double x, double y);
   glm::vec4 ViewToWorldTransform(const glm::vec4& vec);

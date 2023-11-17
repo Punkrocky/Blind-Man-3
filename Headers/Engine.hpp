@@ -53,9 +53,10 @@ private:
   Timer GameTimer;             //!< Timer
   LogFile DebugLog;            //!< Log file for debug information
 
-  EntityPtr EntityArray;                 //!< All Entities
-  TransformComponentPtr TransformsArray; //!< All Transform Components for Entities
-  GraphicsComponentPtr GraphicsArray;    //!< All Graphics Components for Entites
+  EntityPtr TileEntityArray;             //!< All tile entities
+  EntityPtr ObjectEntityArray;           //!< All object entities
+  TransformComponentPtr TransformsArray; //!< All transform components for entities
+  GraphicsComponentPtr GraphicsArray;    //!< All graphics components for entites
   std::array<Chunk, CHUNK_PER_WORLD_SQRD>* ChunkArray;
 
   float dt;            //!< Delta time
