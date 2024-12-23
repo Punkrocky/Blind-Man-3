@@ -9,7 +9,7 @@
 #include <array>
 
 #include "OpenGLIncludes.hpp"
-#include "GlobalDefines.h"
+#include "GlobalDefines.hpp"
 #include "Entity.hpp"
 
 
@@ -21,8 +21,8 @@ public:
   void InitChunkData();
   void Draw(float dt, const glm::mat4& viewMatrix) const;
 
-  const unsigned int ID;
   std::array<EntityPtr, TILES_PER_CHUNK_SQRD> ChunkEntities;
+  const unsigned int ID;
 private:
   GLuint ChunkVAO; //!< Vertex array object of the chunk
 };

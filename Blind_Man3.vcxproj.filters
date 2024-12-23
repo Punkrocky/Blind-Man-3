@@ -128,7 +128,7 @@
     <ClInclude Include="Headers\Chunk.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Headers\GlobalDefines.h">
+    <ClInclude Include="Headers\GlobalDefines.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

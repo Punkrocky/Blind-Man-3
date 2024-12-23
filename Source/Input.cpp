@@ -14,6 +14,7 @@ void (*DragCamera)(double, double);
 void (*ZoomCamera)(double, double);
 void (*Key_S)();
 void (*Key_G)();
+void (*Key_C)();
 int (*GrabTileValue)();
 void (*PlaceTileValue)(int);
 
@@ -58,6 +59,14 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
     }
   }
   break;
+  case GLFW_KEY_C:
+  {
+    if (action == GLFW_PRESS)
+    {
+      Key_C();
+    }
+  }
+  break;
   default:
     break;
   }
@@ -66,11 +75,13 @@ void KeyboardInputCallback(GLFWwindow* window, int key, int scancode, int action
 
 void MouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
-  // Only update the camera posion if the left mouse button is held down
+  // This function is only called when the mouse cursor is detected to be moving over the window
+
+  // Only update the camera posion if the right mouse button is held down
   if (bRightButton)
   {
     bDragCamera = true;
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // Calculate how much the mouse moved
     xPosDelta = xpos - xPosLast;
     yPosDelta = ypos - yPosLast;

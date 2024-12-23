@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "GlobalDefines.h"
+#include "GlobalDefines.hpp"
 #include "BaseComponent.hpp"
 #include "TextureManager.hpp"
 #include "OpenGLIncludes.hpp"

@@ -8,7 +8,7 @@
 
 #include "GraphicsComponent.hpp"
 #include "OpenGLIncludes.hpp"
-#include "GlobalDefines.h"
+#include "GlobalDefines.hpp"
 
 /// Holds data related to how an entity should be orientated in the world
 class TransformComponent

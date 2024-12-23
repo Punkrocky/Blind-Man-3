@@ -8,18 +8,19 @@
 
 #include <vector>
 
-#include "GlobalDefines.h"
+#include "GlobalDefines.hpp"
 #include "GraphicsComponent.hpp"
 #include "OpenGLIncludes.hpp"
 #include "TextureManager.hpp"
 #include "ShaderManager.hpp"
 #include "MeshManager.hpp"
+#include "Walking.hpp"
 #include "Camera.hpp"
 #include "Entity.hpp"
 #include "Random.hpp"
 #include "Chunk.hpp"
 
-typedef class Engine;
+class Engine;
 
 /// System that contains all logic to update entities with graphics components
 class GraphicsSystem
@@ -33,6 +34,8 @@ public:
   void PreUpdate();
   void Update(float dt, const std::array<Chunk, CHUNK_PER_WORLD_SQRD>* entities, int arraySize);
   void Update(float dt, const EntityPtr& entities, int arraySize);
+  void DrawIslandBounds(float dt, std::vector<Blind::Island>& islands);
+  void DrawGradientLines(float dt, std::vector<std::vector<std::array<glm::vec4, 9>>>& gradient);
   void PostUpdate();
 
   void MoveCamera(double x, double y);

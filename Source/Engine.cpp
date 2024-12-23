@@ -12,6 +12,7 @@
 
 static Random NumberGen(8764);
 static Engine* ThisPtr;
+static bool bIsColoredDebug = false;
 
 
 
@@ -26,11 +27,29 @@ void ScrollMouse(double x, double y)
   ThisPtr->PtrGraphicsSys->ScrollCamera(x, y);
 }
 
+void TogglePalette()
+{
+  bIsColoredDebug = !bIsColoredDebug;
+
+  for (int i = 0; i < ThisPtr->WorldSizeTiles; ++i)
+  {
+    for (int j = 0; j < ThisPtr->WorldSizeTiles; ++j)
+    {
+      ThisPtr->TileEntityArray[i * ThisPtr->WorldSizeTiles + j].GetGraphicsComponent()->SetColor(ThisPtr->PtrBlindWorld->GetTileColor(i, j, static_cast<Blind::World::PalletType>(Blind::World::ISLAND_TROPICAL + bIsColoredDebug)));
+    }
+  }
+
+  for (int i = 0; i < CHUNK_PER_WORLD_SQRD; ++i)
+  {
+    ThisPtr->ChunkArray[0][i].InitChunkData();
+  }
+}
 
 void SmoothMap()
 {
   std::cout << "Smooting Map...\n";
   ThisPtr->PtrBlindWorld->SmoothMAP();
+  ThisPtr->PtrBlindWorld->CountIslands();
   std::cout << "  Recolor tiles";
   DebugTimer.StartFrame();
   for (int i = 0; i < ThisPtr->WorldSizeTiles; ++i)
@@ -62,6 +81,7 @@ void GenerateMap()
   ThisPtr->PtrBlindWorld->GenerateIslands();
   ThisPtr->PtrBlindWorld->SmoothMAP();
   ThisPtr->PtrBlindWorld->SmoothMAP();
+  ThisPtr->PtrBlindWorld->CountIslands();
   DebugTimer.EndFrame();
   std::cout << "  " << DebugTimer;
 
@@ -107,10 +127,17 @@ void SetTileValue(int a)
 Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(TILES_PER_WORLD_SQRD), WorldSizeTiles(TILES_PER_WORLD), WorldSizeChunks(CHUNK_PER_WORLD), bShuttingDown(false), DebugLog("Debug_Log")
 {
   PtrBlindWorld = new Blind::World(WorldSizeTiles, 1);
-  PtrBlindWorld->GenerateIslands();
+  PtrBlindWorld->GenerateCirclePlot();
+
+  PtrBlindWorld->SaveMapImage("Final_Less", WorldSizeTiles, Blind::World::YELLOW_PURPLE, 7);
   PtrBlindWorld->SmoothMAP();
   PtrBlindWorld->SmoothMAP();
-  PtrBlindWorld->SaveMapImage("Test", WorldSizeTiles);
+
+  //PtrBlindWorld->CountIslands();
+  PtrBlindWorld->MakeGradientMAP();
+  PtrBlindWorld->SaveMapImage("Final_Full", WorldSizeTiles, Blind::World::YELLOW_PURPLE, 0);
+  PtrBlindWorld->SaveMapImage("Final_Stri", WorldSizeTiles, Blind::World::YELLOW_PURPLE, 4);
+  PtrBlindWorld->SaveMapImage("Final", WorldSizeTiles, Blind::World::YELLOW_PURPLE, 7);
 
   PtrGraphicsSys = new GraphicsSystem(this);
 
@@ -119,6 +146,7 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(TILES_PER_
   ZoomCamera = &ScrollMouse;
   Key_S = &SmoothMap;
   Key_G = &GenerateMap;
+  Key_C = &TogglePalette;
   GrabTileValue = &GetTileValue;
   PlaceTileValue = &SetTileValue;
 
@@ -150,11 +178,11 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(TILES_PER_
 
 
   // Apply colors to the tiles based on their generation
-  for (int i = 0; i < WorldSizeTiles; ++i)   // Y-axis
+  for (int i = 0; i < WorldSizeTiles; ++i)   // Rows (Y-axis)
   {
-    for (int j = 0; j < WorldSizeTiles; ++j) // X-axis
+    for (int j = 0; j < WorldSizeTiles; ++j) // Columns (X-axis)
     {
-      TempColor = PtrBlindWorld->GetTileColor(i, j, Blind::World::PalletType::ISLAND_TROPICAL);
+      TempColor = PtrBlindWorld->GetTileColor(i, j, Blind::World::PalletType::YELLOW_PURPLE);
       
       int Index = i * WorldSizeTiles + j;
       TransformsArray[Index] = TempPosition;
@@ -182,20 +210,20 @@ Engine::Engine(GameWindow* window) : PtrGameWindow(window), ArraySize(TILES_PER_
     (*ChunkArray)[i].InitChunkData();
   }
 
-  TempPosition = glm::vec3(-10.0f, -5.0f, 1.0f);
+  TempPosition = glm::vec3(OBJECT_HALF_SIZE, -OBJECT_HALF_SIZE, 1.0f);
   TempColor = glm::vec3(1.0f);
 
   for (int i = TILES_PER_WORLD_SQRD; i < ArraySize; ++i)
   {
-    TransformsArray[i] = TempPosition;
+    TransformsArray[i] = TransformComponent(TempPosition, OBJECT_HALF_SIZE);
     GraphicsArray[i] = TempColor;
 
     // Create a new Tile in the world
-    ObjectEntityArray[i-TILES_PER_WORLD_SQRD].GraphicsComp = &GraphicsArray[i];
-    ObjectEntityArray[i - TILES_PER_WORLD_SQRD].InitGraphicsComponent(ShManager->GetShaderPtr(SType::Entity_s), TxManager->GetTexturePtr(static_cast<Texture::TextureType>(i- TILES_PER_WORLD_SQRD)), MsManager->GetMeshObject(MType::Square_m));
+    ObjectEntityArray[i - TILES_PER_WORLD_SQRD].GraphicsComp = &GraphicsArray[i];
+    ObjectEntityArray[i - TILES_PER_WORLD_SQRD].InitGraphicsComponent(ShManager->GetShaderPtr(SType::Entity_s), TxManager->GetTexturePtr(static_cast<Texture::TextureType>(i - TILES_PER_WORLD_SQRD)), MsManager->GetMeshObject(MType::Square_m));
     ObjectEntityArray[i - TILES_PER_WORLD_SQRD].TransformComp = &TransformsArray[i];
 
-    TempPosition.x += 1.0f;
+    TempPosition.x += OBJECT_HALF_SIZE * 2;
   }
 
   std::cout << "Engine Constructed\n";
@@ -218,6 +246,7 @@ void Engine::Update(float dt)
   const int MaxFrames = 60000;
   int FrameCount = 0;
   float FrameTime = 0.0f;
+  bool TempToggle = false;
 
   // Game loop
   while (!bShuttingDown)
@@ -230,11 +259,14 @@ void Engine::Update(float dt)
     //  continue;
     //}
     //std::cout << "      Total " << GameTimer << '\n';
+
     GameTimer.StartFrame();
 
     PtrGraphicsSys->PreUpdate();
     PtrGraphicsSys->Update(dt, ChunkArray, ChunkArray->size());
     PtrGraphicsSys->Update(dt, ObjectEntityArray, 6);
+    PtrGraphicsSys->DrawIslandBounds(dt, PtrBlindWorld->GetIslandArray());
+    PtrGraphicsSys->DrawGradientLines(dt, PtrBlindWorld->GetGradientMap());
     PtrGraphicsSys->PostUpdate();
 
     // Test Framerates

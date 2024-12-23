@@ -165,6 +165,163 @@ void GraphicsSystem::Update(float dt, const EntityPtr& entities, int arraySize)
   }
 }
 
+void GraphicsSystem::DrawIslandBounds(float dt, std::vector<Blind::Island>& islands)
+{
+  glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
+  glm::mat4 InverseMatrix = glm::inverse(ViewMatrix);
+  glm::vec3 ViewPortScale = Viewport.GetScale();
+  ViewPortScale.y = -ViewPortScale.y;
+
+  // Get the mouse screen position and transform it to NDC then to worldspace
+  glm::vec4 MousePos = InverseMatrix * ScreenBase * glm::vec4(GetLastMousePos(), 0.0f, 1.0f);
+  // Workaround for not having an entity, works because .json is ordered specifically
+  GLuint ShaderID = 4;
+  glUseProgram(ShaderID);
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &ViewMatrix[0][0]);
+
+
+  for (int i = 1; i < islands.size(); ++i)
+  {
+    glm::vec4 LineColor(islands[i].GetColor() + 0.2f, 1.0f); // color
+    glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+
+    // Bounding box boundary
+    glm::mat4 mMat(1.0f);
+
+    float DeltaY = (islands[i].GetBoundsAtIndex(Blind::UP) - islands[i].GetBoundsAtIndex(Blind::DOWN) + 1) * TILE_HALF_SIZE;
+    float DeltaX = (islands[i].GetBoundsAtIndex(Blind::RIGHT) - islands[i].GetBoundsAtIndex(Blind::LEFT) + 1) * TILE_HALF_SIZE;
+    glm::vec2 IslandPosition(DeltaX + islands[i].GetBoundsAtIndex(Blind::LEFT), DeltaY + islands[i].GetBoundsAtIndex(Blind::DOWN));
+
+    // Skip drawing any bounding box that the mouse is not inside
+    /*if (MousePos.x < islands[i].GetBoundsAtIndex(Blind::LEFT) || MousePos.x > islands[i].GetBoundsAtIndex(Blind::RIGHT) + 1 ||
+        MousePos.y < islands[i].GetBoundsAtIndex(Blind::DOWN) || MousePos.y > islands[i].GetBoundsAtIndex(Blind::UP) + 1)
+    {
+      continue;
+    }*/
+
+    mMat[3] = glm::vec4(IslandPosition, 1.0f, 1.0f);
+    mMat[0][0] = DeltaX; // Add a bit of extra space around the tiles to make square islands easier to see
+    mMat[1][1] = DeltaY;
+
+    glm::mat4 wPos(0.0f);
+    wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
+    wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
+    wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
+    wPos[3] = glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f);  // Top Left
+    wPos = mMat * wPos;
+
+    const int pSize = 20;
+    glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
+
+    // Bounding box of island
+    // Line 1
+    Points[0] = wPos[0];
+    Points[1] = wPos[1];
+    // Line 2
+    Points[2] = wPos[1];
+    Points[3] = wPos[2];
+    // Line 3
+    Points[4] = wPos[2];
+    Points[5] = wPos[3];
+    // Line 4
+    Points[6] = wPos[3];
+    Points[7] = wPos[0];
+
+    // Line from bounding box corners to screen center
+    // Line 5
+    //Points[8] = wPos[0];
+    //Points[9] = glm::vec4(0.0f);
+    //// Line 6
+    //Points[10] = wPos[1];
+    //Points[11] = glm::vec4(0.0f);
+    //// Line 7
+    //Points[12] = wPos[2];
+    //Points[13] = glm::vec4(0.0f);
+    //// Line 8
+    //Points[14] = wPos[3];
+    //Points[15] = glm::vec4(0.0f);
+
+    // Cross from bounding box opposite corners
+    // Line 9
+    Points[16] = wPos[0];
+    Points[17] = wPos[2];
+    // Line 10
+    Points[18] = wPos[1];
+    Points[19] = wPos[3];
+
+    glBindVertexArray(GeometryData.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    glDrawArrays(GL_LINES, 0, pSize); // Draw Box Boundary
+
+
+  }
+}
+
+void GraphicsSystem::DrawGradientLines(float dt, std::vector<std::vector<std::array<glm::vec4, 9>>>& gradient)
+{
+  glm::vec4 LineColor(1.0f, 1.0f, .0f, 1.0f); // yellow
+  glm::mat4 ViewMatrix = Viewport.GetViewMatrix();
+  glm::mat4 InverseMatrix = glm::inverse(ViewMatrix);
+  glm::vec3 ViewPortScale = Viewport.GetScale();
+  ViewPortScale.y = -ViewPortScale.y;
+
+  // Workaround for not having an entity, works because .json is ordered specifically
+  GLuint ShaderID = 4;
+
+  glUseProgram(ShaderID);
+  glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, &ViewMatrix[0][0]);
+  glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+
+
+
+  for (int i = 0; i < gradient.size(); ++i)
+  {
+    for (int j = 0; j < gradient[0].size(); ++j)
+    {
+      glm::mat4 mMat = ParentEngine->GetEntityAtCoords(glm::ivec2(i, j)).GetTransformComponent()->GetModelMatrix();
+      bool peak = true;
+
+      const int pSize = 18;
+      glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
+
+      for (int k = 0; k < 18; ++k)
+      {
+        Points[k] = mMat * gradient[i][j][k/2];
+        Points[++k] = mMat * (gradient[i][j][k/2] * glm::vec4(0.15f, 0.15f, 0.0f, 1.0f));
+        glm::vec4 ve = Points[k] - Points[k - 1];
+        if (glm::length(ve) == 0.0f && (k/2 != 4))
+        {
+          peak = false;
+        }
+      }
+
+      if (peak)
+      {
+        glm::vec4 LineColor(0.0f, 0.0f, 1.0f, 1.0f); // white
+        glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+      }
+      else
+      {
+        glm::vec4 LineColor(1.0f, 1.0f, 0.0f, 1.0f); // yellow
+        glUniform4fv(glGetUniformLocation(ShaderID, "fColor"), 1, &LineColor[0]);
+      }
+
+      glBindVertexArray(GeometryData.VAO);
+      glBindBuffer(GL_ARRAY_BUFFER, GeometryData.PositionVBO);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(Points), &Points[0], GL_STATIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+      glDrawArrays(GL_LINES, 0, pSize); // Draw Tile Boundary
+    }
+  }
+
+}
+
 
 void GraphicsSystem::PostUpdate()
 {
@@ -267,7 +424,7 @@ void GraphicsSystem::DrawDebugLines(const glm::mat4& viewMatrix)
 
   // Tile boundary
   glm::mat4 mMat = ParentEngine->GetEntityAtCoords(ParentEngine->GetTileCoords(MousePos)).GetTransformComponent()->GetModelMatrix();
-  glm::mat4 wPos;
+  glm::mat4 wPos(0.0f);
   wPos[0] = glm::vec4(1.0f, 1.0f, 0.0f, 1.0f);   // Top Right
   wPos[1] = glm::vec4(1.0f, -1.0f, 0.0f, 1.0f);  // Bottom Right
   wPos[2] = glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f); // Bottom Left
@@ -276,22 +433,22 @@ void GraphicsSystem::DrawDebugLines(const glm::mat4& viewMatrix)
 
   const int pSize = 12;
   glm::vec4 Points[pSize] = { glm::vec4(0.0f) };
-  // Line 0
+  // Line 0 - World center to mouse position
   Points[0] = glm::vec4(TILES_PER_WORLD / 2.0f, TILES_PER_WORLD / 2.0f, 0.0f, 1.0f);
   Points[1] = MousePos;
-  // Line 1
+  // Line 1 - Tile boundary right
   Points[2] = wPos[0];
   Points[3] = wPos[1];
-  // Line 2
+  // Line 2 - Tile boundary bottom
   Points[4] = wPos[1];
   Points[5] = wPos[2];
-  // Line 3
+  // Line 3 - Tile boundary left
   Points[6] = wPos[2];
   Points[7] = wPos[3];
-  // Line 4
+  // Line 4 - Tile boundary top
   Points[8] = wPos[3];
   Points[9] = wPos[0];
-  // Line 5
+  // Line 5 - Screen center to mouse position
   Points[10] = ScreenCenter;
   Points[11] = MousePos;
 

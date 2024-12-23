@@ -7,7 +7,7 @@
 #pragma once
 #include <array>
 
-#include "GlobalDefines.h"
+#include "GlobalDefines.hpp"
 #include "GraphicsSystem.hpp"
 #include "GameWindow.hpp"
 #include "Logging.hpp"
@@ -38,6 +38,7 @@ private:
   // Input functions
   friend void MoveMouse(double x, double y);
   friend void ScrollMouse(double x, double y);
+  friend void TogglePalette();
   friend void SmoothMap();
   friend void GenerateMap();
   friend int GetTileValue();

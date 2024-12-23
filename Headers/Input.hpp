@@ -13,8 +13,11 @@ typedef void (*MouseButtonIntFunction)(int);
 
 extern MouseVec2DFunction DragCamera;
 extern MouseVec2DFunction ZoomCamera;
+
 extern KeyFunction Key_S;
 extern KeyFunction Key_G;
+extern KeyFunction Key_C;
+
 extern MouseButtonFunction GrabTileValue;
 extern MouseButtonIntFunction PlaceTileValue;
 
